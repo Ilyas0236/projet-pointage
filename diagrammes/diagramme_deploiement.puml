@@ -1,0 +1,80 @@
+@startuml Diagramme_Deploiement
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam nodeBackgroundColor #D6EAF8
+skinparam nodeBorderColor #2980B9
+skinparam artifactBackgroundColor #FCF3CF
+skinparam artifactBorderColor #F39C12
+skinparam databaseBackgroundColor #D5F5E3
+skinparam databaseBorderColor #27AE60
+skinparam cloudBackgroundColor #EBF5FB
+skinparam cloudBorderColor #2980B9
+skinparam arrowColor #2C3E50
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme de Déploiement\nInfrastructure — Application de Pointage
+
+node "<<device>>\nSmartphone / PC\nde l'Employé" as DEVICE #AED6F1 {
+    node "<<browser>>\nNavigateur Web\n(Chrome, Safari, Firefox)" as BROWSER #D6EAF8 {
+        artifact "Application\nNext.js (React)\nSSR + CSR" as APP #FCF3CF
+        artifact "GPS\nnavigator.geolocation" as GPS #D5F5E3
+        artifact "Caméra\nScanner QR Code" as CAM #E8DAEF
+    }
+}
+
+node "<<device>>\nPC Administrateur" as ADMIN_DEV #F9E79F {
+    node "<<browser>>\nNavigateur Web" as ADMIN_BROWSER #D6EAF8 {
+        artifact "Application\nNext.js (React)\nInterface Admin" as ADMIN_APP #FCF3CF
+    }
+}
+
+cloud "<<cloud>>\nVercel\n(Hébergement)" as VERCEL #EBF5FB {
+    node "<<server>>\nServeur Next.js" as SERVER #D6EAF8 {
+        artifact "API Routes\n(/api/*)" as API #F9E79F
+        artifact "Middleware\n(JWT + Rôles)" as MW #FADBD8
+        artifact "Pages SSR\n(Server-Side\nRendering)" as SSR #FCF3CF
+        artifact "CRON Job\n(Détection\nAnomalies)" as CRON #E8DAEF
+    }
+}
+
+cloud "<<cloud>>\nMongoDB Atlas\n(Base de données)" as ATLAS #D5F5E3 {
+    database "MongoDB\nReplica Set" as MONGO {
+        artifact "users" as C1
+        artifact "pointages" as C2
+        artifact "conges" as C3
+        artifact "qrcodes" as C4
+        artifact "zones_autorisees" as C5
+        artifact "anomalies" as C6
+        artifact "notifications" as C7
+    }
+}
+
+' ============ CONNEXIONS ============
+BROWSER -down-> SERVER : <<HTTPS>>\nREST API\n+ SSR Pages
+ADMIN_BROWSER -down-> SERVER : <<HTTPS>>\nREST API\n+ SSR Pages
+SERVER -down-> MONGO : <<TCP/TLS>>\nMongoose ODM\nPort 27017
+
+' ============ NOTES ============
+note right of VERCEL
+    Déploiement automatique
+    via GitHub (CI/CD)
+    Domaine : app.pointage.com
+end note
+
+note right of ATLAS
+    Hébergement cloud
+    Réplication automatique
+    Backups quotidiens
+end note
+
+note bottom of DEVICE
+    L'employé utilise son
+    smartphone pour pointer :
+    — GPS obligatoire
+    — Caméra pour QR Code
+    — Connexion Internet
+end note
+
+@enduml

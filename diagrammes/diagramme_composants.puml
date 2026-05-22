@@ -1,0 +1,72 @@
+@startuml Diagramme_Composants
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam componentBackgroundColor #D6EAF8
+skinparam componentBorderColor #2980B9
+skinparam packageBackgroundColor #EBF5FB
+skinparam packageBorderColor #2980B9
+skinparam databaseBackgroundColor #D5F5E3
+skinparam databaseBorderColor #27AE60
+skinparam arrowColor #2C3E50
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme de Composants\nArchitecture Technique — Application de Pointage
+
+package "<<Navigateur Client>>" as CLIENT #EBF5FB {
+    component [Pages Next.js\n(App Router)] as PAGES #D6EAF8
+    component [Composants\nReact] as COMPS #D6EAF8
+    component [Services API\n(Axios)] as SERVICES #D6EAF8
+    component [Module\nGéolocalisation] as GEO_MOD #D5F5E3
+    component [Scanner\nQR Code] as QR_MOD #E8DAEF
+
+    PAGES --> COMPS : utilise
+    PAGES --> SERVICES : appelle
+    PAGES --> GEO_MOD : requête GPS
+    PAGES --> QR_MOD : scan caméra
+}
+
+package "<<Serveur Next.js>>" as SERVER #FCF3CF {
+    component [API Routes\n(/api/*)] as API #F9E79F
+    component [Middleware\nAuthentification\n(JWT)] as MW_AUTH #FADBD8
+    component [Middleware\nContrôle des Rôles] as MW_ROLE #FADBD8
+    component [Service\nHaversine\n(calcul GPS)] as HAVERSINE #D5F5E3
+    component [Service\nDétection Anomalies] as ANOMALY #FADBD8
+    component [Modèles\nMongoose\n(ODM)] as MODELS #D6EAF8
+    component [Tâche CRON\n(23h59)] as CRON #E8DAEF
+
+    API --> MW_AUTH : vérifie token
+    MW_AUTH --> MW_ROLE : vérifie rôle
+    API --> HAVERSINE : calcul distance
+    API --> MODELS : requêtes DB
+    CRON --> ANOMALY : déclenche
+    ANOMALY --> MODELS : lecture/écriture
+}
+
+package "<<Base de Données>>" as DATABASE #D5F5E3 {
+    database "MongoDB\nAtlas" as MONGO #D5F5E3 {
+        collections [
+            users
+            pointages
+            conges
+            qrcodes
+            zones_autorisees
+            anomalies
+            notifications
+        ]
+    }
+}
+
+package "<<Services Externes>>" as EXTERNAL #E8E8E8 {
+    component [API GPS\nNavigateur] as EXT_GPS #D5F5E3
+    component [Caméra\nAppareil] as EXT_CAM #E8DAEF
+}
+
+' ============ CONNEXIONS INTER-PACKAGES ============
+SERVICES -down-> API : <<HTTPS>>\nREST / JSON
+MODELS -down-> MONGO : <<Mongoose ODM>>\nTCP/TLS
+GEO_MOD -right-> EXT_GPS : navigator\n.geolocation
+QR_MOD -right-> EXT_CAM : getUserMedia()
+
+@enduml

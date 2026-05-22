@@ -1,0 +1,68 @@
+@startuml Diagramme_Etat_QRCode
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam stateBackgroundColor #D6EAF8
+skinparam stateBorderColor #2980B9
+skinparam arrowColor #2C3E50
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme d'État — Cycle de Vie d'un QR Code
+
+[*] --> GENERE : Admin génère\nun nouveau QR Code\n/ code = UUID.v4()
+
+state GENERE #E8DAEF {
+    GENERE : QR Code vient d'être créé
+    GENERE : code unique généré
+    GENERE : dateExpiration définie
+}
+
+state ACTIF #D5F5E3 {
+    ACTIF : QR Code fonctionnel
+    ACTIF : Affiché dans les locaux
+    ACTIF : Scanné par les employés
+}
+
+state EXPIRE #FADBD8 {
+    EXPIRE : dateExpiration atteinte
+    EXPIRE : QR Code non utilisable
+    EXPIRE : Doit être régénéré
+}
+
+state DESACTIVE #E8E8E8 {
+    DESACTIVE : Désactivé manuellement
+    DESACTIVE : par l'administrateur
+}
+
+GENERE --> ACTIF : Activation automatique\n/ actif = true
+
+ACTIF --> ACTIF : Employé scanne\n[code valide ET non expiré]\n/ compteur scans++
+ACTIF --> EXPIRE : [Date.now() > dateExpiration]\n/ actif = false
+ACTIF --> DESACTIVE : Admin désactive\nmanuellement\n/ actif = false
+
+EXPIRE --> ACTIF : Admin régénère\n/ nouveau code = UUID.v4()\n/ nouvelle dateExpiration\n/ actif = true
+DESACTIVE --> ACTIF : Admin réactive\n/ actif = true
+
+note right of ACTIF
+    C'est l'état principal :
+    le QR Code est affiché
+    dans les locaux et les
+    employés le scannent
+    pour pointer.
+end note
+
+note bottom of EXPIRE
+    La vérification d'expiration
+    se fait côté serveur à chaque
+    scan : dateExpiration > Date.now()
+end note
+
+note left of GENERE
+    Un seul QR Code actif
+    à la fois par entreprise.
+    L'ancien est désactivé
+    automatiquement.
+end note
+
+@enduml

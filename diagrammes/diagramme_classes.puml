@@ -1,0 +1,204 @@
+@startuml Diagramme_Classes
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #D6EAF8
+skinparam classBorderColor #2980B9
+skinparam classAttributeFontSize 11
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam arrowColor #2C3E50
+skinparam stereotypeFontSize 10
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 18
+skinparam enumBackgroundColor #FCF3CF
+skinparam enumBorderColor #F39C12
+
+title Diagramme de Classes\nApplication de Pointage Numérique
+
+' ============ ENUMS ============
+enum Role #FCF3CF {
+    ADMIN
+    EMPLOYE
+}
+
+enum TypePointage #FCF3CF {
+    ENTREE
+    SORTIE
+}
+
+enum TypeConge #FCF3CF {
+    ANNUEL
+    MALADIE
+    EXCEPTIONNEL
+}
+
+enum StatutConge #FCF3CF {
+    EN_ATTENTE
+    VALIDE
+    REFUSE
+}
+
+enum TypeAnomalie #FCF3CF {
+    RETARD
+    ABSENCE
+    SORTIE_ANTICIPEE
+    INSUFFISANCE_HEURES
+}
+
+enum TypeNotification #FCF3CF {
+    INFO
+    ALERTE
+    CONGE
+}
+
+' ============ CLASSES ============
+abstract class Utilisateur #AED6F1 {
+    - _id : ObjectId
+    - nom : String
+    - email : String
+    - password : String {hashed bcrypt}
+    - role : Role
+    - actif : Boolean = true
+    - createdAt : Date
+    - updatedAt : Date
+    __
+    + seConnecter(email, password) : Token
+    + seDeconnecter() : void
+}
+
+class Administrateur #F9E79F {
+    __
+    + validerConge(conge : Conge) : void
+    + refuserConge(conge : Conge) : void
+    + consulterDashboard() : Statistiques
+    + genererQRCode() : QRCode
+    + genererRapport() : Fichier
+    + ajouterEmploye(data) : Employe
+    + listerEmployes() : List<Employe>
+}
+
+class Employe #AED6F1 {
+    - matricule : String
+    - departement : String
+    __
+    + pointer() : Pointage
+    + demanderConge(data) : Conge
+    + annulerConge(conge : Conge) : void
+    + consulterHistorique() : List<Pointage>
+    + consulterAnomalies() : List<Anomalie>
+}
+
+class Pointage #D5F5E3 {
+    - _id : ObjectId
+    - date : Date
+    - heure : String {HH:mm:ss}
+    - type : TypePointage
+    - latitude : Double
+    - longitude : Double
+    - valide : Boolean
+    - createdAt : Date
+    __
+    + enregistrer() : void
+    + validerPosition(zone : ZoneAutorisee) : Boolean
+}
+
+class Conge #FADBD8 {
+    - _id : ObjectId
+    - date_debut : Date
+    - date_fin : Date
+    - type : TypeConge
+    - statut : StatutConge = EN_ATTENTE
+    - motif : String
+    - date_traitement : Date
+    - createdAt : Date
+    __
+    + soumettre() : void
+    + annuler() : void
+    + calculerDuree() : Number
+}
+
+class QRCode #E8DAEF {
+    - _id : ObjectId
+    - code : String {UUID v4}
+    - dateGeneration : Date
+    - dateExpiration : Date
+    - actif : Boolean = true
+    __
+    + generer() : String
+    + regenerer() : String
+    + estValide() : Boolean
+    + invalider() : void
+}
+
+class ZoneAutorisee #D5F5E3 {
+    - _id : ObjectId
+    - nom : String
+    - latitudeCentre : Double
+    - longitudeCentre : Double
+    - rayonMetres : Number
+    - actif : Boolean = true
+    __
+    + verifierPosition(lat, lng) : Boolean
+    + calculerDistance(lat, lng) : Double
+    .. formule de Haversine ..
+}
+
+class Anomalie #FADBD8 {
+    - _id : ObjectId
+    - date : Date
+    - type : TypeAnomalie
+    - description : String
+    - heuresTravaillees : Double
+    - seuilAttendu : Double = 8.0
+    - createdAt : Date
+    __
+    + detecter() : void
+    + getDetails() : String
+}
+
+class Notification #D5F5E3 {
+    - _id : ObjectId
+    - titre : String
+    - message : String
+    - type : TypeNotification
+    - lu : Boolean = false
+    - createdAt : Date
+    __
+    + marquerCommeLue() : void
+    + envoyer() : void
+}
+
+' ============ HÉRITAGE ============
+Utilisateur <|-- Administrateur
+Utilisateur <|-- Employe
+
+' ============ ASSOCIATIONS ============
+Employe "1" --> "0..*" Pointage : effectue >
+Employe "1" --> "0..*" Conge : soumet >
+Employe "1" --> "0..*" Anomalie : possède >
+Employe "1" --> "0..*" Notification : reçoit >
+
+Administrateur "1" --> "0..*" Conge : traite >
+Administrateur "1" --> "0..*" QRCode : génère >
+
+Pointage "0..*" --> "1" QRCode : validé par >
+Pointage "0..*" --> "1" ZoneAutorisee : vérifié dans >
+
+' ============ NOTES ============
+note bottom of ZoneAutorisee
+    La formule de Haversine calcule
+    la distance entre deux points GPS
+    sur la surface terrestre.
+    d = 2r × arcsin(√(sin²(Δlat/2) +
+    cos(lat1)·cos(lat2)·sin²(Δlng/2)))
+end note
+
+note right of QRCode
+    Le QR Code est généré par l'admin,
+    affiché dans les locaux et scanné
+    par les employés lors du pointage.
+    Il est indépendant de la zone.
+end note
+
+@enduml

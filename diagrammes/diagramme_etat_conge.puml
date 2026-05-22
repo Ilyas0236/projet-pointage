@@ -1,0 +1,75 @@
+@startuml Diagramme_Etat_Conge
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam stateBackgroundColor #D6EAF8
+skinparam stateBorderColor #2980B9
+skinparam arrowColor #2C3E50
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme d'État — Cycle de Vie d'un Congé
+
+[*] --> EN_ATTENTE : Employé soumet\nla demande\n[solde suffisant]
+
+state EN_ATTENTE #FCF3CF {
+    EN_ATTENTE : La demande est en attente
+    EN_ATTENTE : de décision par l'admin
+}
+
+state VALIDE #D5F5E3 {
+    VALIDE : L'admin a accepté
+    VALIDE : le congé demandé
+}
+
+state REFUSE #FADBD8 {
+    REFUSE : L'admin a refusé
+    REFUSE : le congé demandé
+}
+
+state ANNULE #E8E8E8 {
+    ANNULE : L'employé a annulé
+    ANNULE : sa propre demande
+}
+
+state EN_COURS #D6EAF8 {
+    EN_COURS : Le congé est en cours
+    EN_COURS : (date_debut ≤ aujourd'hui ≤ date_fin)
+}
+
+state TERMINE #D5F5E3 {
+    TERMINE : Le congé est terminé
+    TERMINE : (aujourd'hui > date_fin)
+}
+
+EN_ATTENTE --> VALIDE : Admin accepte\n/ statut = "VALIDE"\n/ notifier employé ✅
+EN_ATTENTE --> REFUSE : Admin refuse\n/ statut = "REFUSE"\n/ notifier employé ❌
+EN_ATTENTE --> ANNULE : Employé annule\n[statut == EN_ATTENTE]\n/ statut = "ANNULE"
+
+VALIDE --> EN_COURS : [date_debut atteinte]\n/ congé effectif
+
+EN_COURS --> TERMINE : [date_fin dépassée]\n/ retour au travail
+
+REFUSE --> [*]
+ANNULE --> [*]
+TERMINE --> [*]
+
+note right of EN_ATTENTE
+    L'employé peut annuler
+    uniquement tant que le
+    statut est EN_ATTENTE
+end note
+
+note left of VALIDE
+    Seul l'administrateur
+    peut valider ou refuser
+    une demande de congé
+end note
+
+note bottom of EN_COURS
+    Transition automatique
+    basée sur les dates
+    (pas d'action manuelle)
+end note
+
+@enduml
