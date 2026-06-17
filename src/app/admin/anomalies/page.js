@@ -227,11 +227,10 @@ export default function AdminAnomalies() {
                 style={{ minWidth: '220px', padding: '8px 12px', background: 'rgba(0,0,0,0.05)' }}
               >
                 <option value="all" style={{ background: 'var(--bg-surface)' }}>Tous les types</option>
-                <option value="RETARD" style={{ background: 'var(--bg-surface)' }}>⏱️ Retard</option>
+                <option value="RETARD" style={{ background: 'var(--bg-surface)' }}>⏰ Retard</option>
                 <option value="ABSENCE" style={{ background: 'var(--bg-surface)' }}>❌ Absence</option>
                 <option value="SORTIE_ANTICIPEE" style={{ background: 'var(--bg-surface)' }}>🏃 Sortie anticipée</option>
-                <option value="INSUFFISANCE_HEURES" style={{ background: 'var(--bg-surface)' }}>📉 Insuffisance horaire</option>
-                <option value="TENTATIVE_HORS_ZONE" style={{ background: 'var(--bg-surface)' }}>🚫 Hors zone</option>
+                <option value="INSUFFISANCE_HEURES" style={{ background: 'var(--bg-surface)' }}>📉 Insuffisance d'heures</option>
               </select>
             </div>
           </div>

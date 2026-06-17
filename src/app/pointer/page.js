@@ -11,9 +11,6 @@ export default function PointerPage() {
   const [gpsStatus, setGpsStatus] = useState('checking'); // checking, ok, error
   const [gpsError, setGpsError] = useState('');
   const [coords, setCoords] = useState(null);
-  
-  const [zoneStatus, setZoneStatus] = useState('checking'); // checking, in, out
-  const [zoneDetails, setZoneDetails] = useState(null);
 
   const [scannerActive, setScannerActive] = useState(false);
   const [scanResult, setScanResult] = useState('');
@@ -33,14 +30,13 @@ export default function PointerPage() {
     }
 
     setGpsStatus('checking');
-    setZoneStatus('checking');
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setCoords({ latitude, longitude });
         setGpsStatus('ok');
-        verifyZone(latitude, longitude);
+        startScanner();
       },
       (error) => {
         console.error('GPS Error:', error);
@@ -51,29 +47,7 @@ export default function PointerPage() {
     );
   };
 
-  const verifyZone = useCallback(async (lat, lng) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        '/api/pointage/verifier-zone',
-        { latitude: lat, longitude: lng },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
 
-      if (response.data.withinZone) {
-        setZoneStatus('in');
-        setZoneDetails(response.data.zone);
-        startScanner();
-      } else {
-        setZoneStatus('out');
-        setZoneDetails(response.data.details);
-      }
-    } catch (err) {
-      console.error('Zone verification error:', err);
-      setZoneStatus('out');
-      setZoneDetails(err.response?.data?.details || null);
-    }
-  }, []);
 
   const startScanner = async () => {
     setScannerActive(true);
@@ -172,7 +146,7 @@ export default function PointerPage() {
     return () => {
       stopScanner();
     };
-  }, [router, verifyZone]);
+  }, [router]);
 
 
   return (
@@ -210,27 +184,11 @@ export default function PointerPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ color: zoneStatus === 'in' ? 'var(--success)' : 'var(--text-muted)' }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>Périmètre de l'entreprise</div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {zoneStatus === 'checking' && <span className="skeleton skeleton-circle" style={{ width: '16px', height: '16px' }}></span>}
-                {zoneStatus === 'in' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                {zoneStatus === 'out' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
-              </div>
             </div>
-            
-            {zoneStatus === 'out' && (
-              <div style={{ fontSize: '0.8rem', color: 'var(--error)', marginTop: '4px' }}>Vous êtes en dehors de la zone autorisée.</div>
-            )}
           </div>
 
           {/* Camera Viewfinder */}
-          {zoneStatus === 'in' && !pointageResult && (
+          {gpsStatus === 'ok' && !pointageResult && (
             <div>
               {scanError && (
                 <div style={{ color: 'var(--error)', padding: '12px', background: 'var(--error-bg)', border: '1px solid var(--error-border)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', marginBottom: '16px', textAlign: 'center' }}>

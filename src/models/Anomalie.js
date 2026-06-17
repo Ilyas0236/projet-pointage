@@ -14,7 +14,7 @@ const AnomalieSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['RETARD', 'ABSENCE', 'SORTIE_ANTICIPEE', 'INSUFFISANCE_HEURES', 'TENTATIVE_HORS_ZONE'],
+      enum: ['RETARD', 'ABSENCE', 'SORTIE_ANTICIPEE', 'INSUFFISANCE_HEURES'],
       required: true,
     },
     description: {

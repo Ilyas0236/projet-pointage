@@ -1,12 +1,10 @@
 import dbConnect from '@/lib/db';
 import Pointage from '@/models/Pointage';
 import QRCode from '@/models/QRCode';
-import ZoneAutorisee from '@/models/ZoneAutorisee';
 import Anomalie from '@/models/Anomalie';
 import Notification from '@/models/Notification';
 import User from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
-import { getDistance } from '@/lib/haversine';
 
 export async function GET(req) {
   try {
@@ -67,53 +65,6 @@ export async function POST(req) {
       return Response.json(
         { error: 'Données GPS et scan du QR Code requis.' },
         { status: 400 }
-      );
-    }
-
-    // 1. GPS Zone Check
-    const zones = await ZoneAutorisee.find({ actif: true });
-    let validatedZone = null;
-
-    for (const zone of zones) {
-      const dist = getDistance(
-        latitude,
-        longitude,
-        zone.latitudeCentre,
-        zone.longitudeCentre
-      );
-      if (dist <= zone.rayonMetres) {
-        validatedZone = zone;
-        break;
-      }
-    }
-
-    if (!validatedZone) {
-      // 1.5 Create anomaly for out-of-zone scan attempt
-      try {
-        const employeeUser = await User.findById(payload.userId).select('nom matricule');
-        const employeeName = employeeUser?.nom || 'Employé inconnu';
-        const employeeMatricule = employeeUser?.matricule || '';
-
-        await Anomalie.create({
-          employe: payload.userId,
-          type: 'TENTATIVE_HORS_ZONE',
-          description: `Tentative de pointage en dehors de la zone autorisée (GPS: ${latitude}, ${longitude})`,
-        });
-
-        // Send notification to Admin
-        await Notification.create({
-          employe: null,
-          titre: `🚫 Pointage hors zone — ${employeeName}`,
-          message: `${employeeName} (${employeeMatricule}) a tenté de pointer en dehors de l'entreprise.`,
-          type: 'ALERTE',
-        });
-      } catch (e) {
-        console.error('Error creating out-of-zone anomaly/notification', e);
-      }
-
-      return Response.json(
-        { error: 'Hors zone autorisée. Vous devez être dans les locaux de l\'entreprise.' },
-        { status: 403 }
       );
     }
 
@@ -182,7 +133,6 @@ export async function POST(req) {
       longitude,
       valide: true,
       qrcode: activeQR._id,
-      zone: validatedZone._id,
     });
 
     // 4. Anomaly checks
@@ -304,7 +254,6 @@ export async function POST(req) {
           _id: pointage._id,
           type: pointage.type,
           heure: pointage.heure,
-          zone: validatedZone.nom,
         },
         anomalies: anomaliesCreated,
       },
