@@ -1,0 +1,86 @@
+@startuml Sequence_Anomalies
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowColor #2C3E50
+skinparam sequenceParticipantBackgroundColor #D6EAF8
+skinparam sequenceParticipantBorderColor #2980B9
+skinparam sequenceLifeLineBorderColor #2980B9
+skinparam sequenceActorBackgroundColor #AED6F1
+skinparam sequenceActorBorderColor #2C3E50
+skinparam sequenceGroupBackgroundColor #EBF5FB
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme de Séquence — Détection Automatique des Anomalies
+
+participant "Tâche Planifiée\n(CRON 23h59)" as CRON #E8DAEF
+participant "API Backend" as A #F9E79F
+database "MongoDB" as DB #D5F5E3
+
+== Déclenchement Automatique Quotidien ==
+
+CRON -> A : Déclencher analyse\nquotidienne
+activate A
+
+A -> DB : db.users.find(\n{role: "EMPLOYE",\nactif: true})
+activate DB
+DB --> A : employes[] (N employés)
+deactivate DB
+
+A -> DB : db.pointages.find(\n{date: today})
+activate DB
+DB --> A : pointagesDuJour[]
+deactivate DB
+
+A -> DB : db.conges.find(\n{date: today,\nstatut: "VALIDE"})
+activate DB
+DB --> A : congesDuJour[]
+deactivate DB
+
+loop Pour chaque employé (sauf en congé)
+    
+    A -> A : Chercher pointages\nde cet employé
+    
+    alt #F2DEDE Aucun pointage trouvé
+        note right of A : **ABSENCE** détectée
+        A -> DB : db.anomalies.insertOne(\n{type: "ABSENCE",\nuser_id, date: today,\ndescription: "Aucun pointage\nenregistré"})
+        activate DB
+        DB --> A : ✓
+        deactivate DB
+        
+    else Pointage(s) trouvé(s)
+        
+        A -> A : Vérifier heure d'entrée
+        alt #FCF8E3 Entrée après 08:30
+            note right of A : **RETARD** détecté
+            A -> DB : db.anomalies.insertOne(\n{type: "RETARD",\nuser_id, date: today,\ndescription: "Entrée à 09:15\nau lieu de 08:30"})
+            activate DB
+            DB --> A : ✓
+            deactivate DB
+        end
+        
+        A -> A : Vérifier heure de sortie
+        alt #FCF8E3 Sortie avant 17:00
+            note right of A : **SORTIE ANTICIPÉE**
+            A -> DB : db.anomalies.insertOne(\n{type: "SORTIE_ANTICIPEE",\nuser_id, date: today,\ndescription: "Sortie à 15:30\nau lieu de 17:00"})
+            activate DB
+            DB --> A : ✓
+            deactivate DB
+        end
+        
+        A -> A : Calculer :\nheures = sortie - entrée
+        alt #F2DEDE heures < 8h (seuil)
+            note right of A : **INSUFFISANCE HORAIRE**
+            A -> DB : db.anomalies.insertOne(\n{type: "INSUFFISANCE_HEURES",\nuser_id, date: today,\nheuresTravaillees: 6.5,\nseuilAttendu: 8})
+            activate DB
+            DB --> A : ✓
+            deactivate DB
+        end
+    end
+end
+
+A --> CRON : Analyse terminée\n(X anomalies détectées)
+deactivate A
+
+@enduml

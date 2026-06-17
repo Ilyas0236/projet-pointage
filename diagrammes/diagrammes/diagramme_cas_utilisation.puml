@@ -1,0 +1,112 @@
+@startuml Diagramme_Cas_Utilisation
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam usecaseBackgroundColor #D6EAF8
+skinparam usecaseBorderColor #2980B9
+skinparam actorBorderColor #2C3E50
+skinparam actorBackgroundColor #AED6F1
+skinparam arrowColor #2C3E50
+skinparam packageBackgroundColor #EBF5FB
+skinparam packageBorderColor #2980B9
+skinparam stereotypeFontSize 10
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam titleFontSize 18
+
+title Diagramme de Cas d'Utilisation\nApplication de Pointage Numérique
+
+left to right direction
+
+' ============ ACTEURS PRINCIPAUX ============
+actor "Employé" as EMP #AED6F1
+actor "Administrateur" as ADM #F9E79F
+
+' ============ ACTEURS SECONDAIRES ============
+actor "Système\n(CRON 23h59)" as CRON #E8DAEF
+actor "API\nGéolocalisation" as GPS #D5F5E3
+actor "Scanner\nQR Code" as QR #D5F5E3
+
+rectangle "Système de Pointage Numérique" {
+
+    ' === CAS D'UTILISATION PARTAGÉS ===
+    usecase "S'authentifier" as UC_AUTH
+
+    ' === CAS D'UTILISATION EMPLOYÉ ===
+    usecase "Pointer la présence" as UC_POINTER
+    usecase "Vérifier la\ngéolocalisation" as UC_GEO
+    usecase "Scanner le\nQR Code" as UC_SCAN
+    usecase "Consulter son historique\nde pointage" as UC_HIST
+
+    usecase "Gérer ses congés" as UC_CONGE_E
+    usecase "Demander\nun congé" as UC_DEM
+    usecase "Consulter le statut\nde ses congés" as UC_STATUT_C
+    usecase "Annuler une\ndemande" as UC_ANNULER
+
+    usecase "Consulter\nses anomalies" as UC_ANOM_E
+
+    ' === CAS D'UTILISATION ADMINISTRATEUR ===
+    usecase "Consulter le\ntableau de bord" as UC_DASH
+    usecase "Gérer les\nemployés" as UC_EMPLOYES
+    usecase "Consulter tous\nles pointages" as UC_ALL_POINT
+    usecase "Gérer les demandes\nde congé" as UC_CONGE_A
+    usecase "Valider\nun congé" as UC_VALIDER
+    usecase "Refuser\nun congé" as UC_REFUSER
+    usecase "Gérer le\nQR Code" as UC_QR
+    usecase "Générer un\nnouveau QR Code" as UC_GEN_QR
+    usecase "Consulter\nles anomalies" as UC_ANOM_A
+    usecase "Exporter\nles rapports" as UC_EXPORT
+
+    ' === CAS D'UTILISATION SYSTÈME ===
+    usecase "Détecter les\nanomalies\nautomatiquement" as UC_DETECT
+}
+
+' ============ RELATIONS EMPLOYÉ ============
+EMP --> UC_POINTER
+EMP --> UC_HIST
+EMP --> UC_CONGE_E
+EMP --> UC_ANOM_E
+
+' ============ RELATIONS ADMINISTRATEUR ============
+ADM --> UC_DASH
+ADM --> UC_EMPLOYES
+ADM --> UC_ALL_POINT
+ADM --> UC_CONGE_A
+ADM --> UC_QR
+ADM --> UC_ANOM_A
+ADM --> UC_EXPORT
+
+' ============ RELATIONS SYSTÈME ============
+CRON --> UC_DETECT
+
+' ============ INCLUDE (étapes obligatoires) ============
+UC_POINTER ..> UC_AUTH : <<include>>
+UC_POINTER ..> UC_GEO : <<include>>
+UC_POINTER ..> UC_SCAN : <<include>>
+UC_HIST ..> UC_AUTH : <<include>>
+UC_CONGE_E ..> UC_AUTH : <<include>>
+UC_ANOM_E ..> UC_AUTH : <<include>>
+
+UC_DASH ..> UC_AUTH : <<include>>
+UC_EMPLOYES ..> UC_AUTH : <<include>>
+UC_ALL_POINT ..> UC_AUTH : <<include>>
+UC_CONGE_A ..> UC_AUTH : <<include>>
+UC_QR ..> UC_AUTH : <<include>>
+UC_ANOM_A ..> UC_AUTH : <<include>>
+UC_EXPORT ..> UC_AUTH : <<include>>
+
+UC_QR ..> UC_GEN_QR : <<include>>
+
+' ============ EXTEND (extensions conditionnelles) ============
+UC_DEM ..> UC_CONGE_E : <<extend>>
+UC_STATUT_C ..> UC_CONGE_E : <<extend>>
+UC_ANNULER ..> UC_CONGE_E : <<extend>>
+note on link : condition :\n[statut = EN_ATTENTE]
+
+UC_VALIDER ..> UC_CONGE_A : <<extend>>
+UC_REFUSER ..> UC_CONGE_A : <<extend>>
+
+' ============ ACTEURS SECONDAIRES ============
+GPS <.. UC_GEO
+QR <.. UC_SCAN
+
+@enduml

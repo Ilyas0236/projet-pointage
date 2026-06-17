@@ -1,0 +1,56 @@
+@startuml Sequence_Authentification
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowColor #2C3E50
+skinparam sequenceParticipantBackgroundColor #D6EAF8
+skinparam sequenceParticipantBorderColor #2980B9
+skinparam sequenceLifeLineBorderColor #2980B9
+skinparam sequenceActorBackgroundColor #AED6F1
+skinparam sequenceActorBorderColor #2C3E50
+skinparam sequenceGroupBackgroundColor #EBF5FB
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme de Séquence — Authentification
+
+actor "Employé" as E #AED6F1
+participant "Frontend\n(Next.js)" as F #D6EAF8
+participant "API Backend" as A #F9E79F
+database "MongoDB" as DB #D5F5E3
+
+E -> F : Saisir email + mot de passe
+activate F
+F -> F : Validation formulaire côté client
+
+F -> A : POST /api/auth/login\n{email, password}
+activate A
+
+A -> DB : db.users.findOne({email})
+activate DB
+DB --> A : Utilisateur trouvé
+deactivate DB
+
+A -> A : bcrypt.compare(password, hash)
+
+alt #DFF0D8 Mot de passe valide
+    A -> A : jwt.sign({userId, role},\nSECRET, {expiresIn: "24h"})
+    A --> F : 200 {token, user: {nom, role}}
+    deactivate A
+    F -> F : localStorage.setItem("token", token)
+    
+    alt role === "ADMIN"
+        F --> E : Redirection → /admin
+    else role === "EMPLOYE"
+        F --> E : Redirection → /dashboard
+    end
+    
+else #F2DEDE Mot de passe invalide
+    A --> F : 401 {erreur: "Identifiants incorrects"}
+    deactivate A
+    F --> E : Afficher message d'erreur
+end
+
+deactivate F
+
+@enduml

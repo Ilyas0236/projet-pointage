@@ -1,0 +1,98 @@
+@startuml Sequence_Conges
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowColor #2C3E50
+skinparam sequenceParticipantBackgroundColor #D6EAF8
+skinparam sequenceParticipantBorderColor #2980B9
+skinparam sequenceLifeLineBorderColor #2980B9
+skinparam sequenceActorBackgroundColor #AED6F1
+skinparam sequenceActorBorderColor #2C3E50
+skinparam sequenceGroupBackgroundColor #EBF5FB
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme de Séquence — Gestion des Congés
+
+actor "Employé" as E #AED6F1
+participant "Frontend\n(Next.js)" as F #D6EAF8
+participant "API Backend" as A #F9E79F
+database "MongoDB" as DB #D5F5E3
+actor "Administrateur" as AD #F9E79F
+
+== Demande de Congé (Employé) ==
+
+E -> F : Remplir formulaire de congé\n(dates, type, motif)
+activate F
+F -> F : Valider dates (début < fin)
+
+F -> A : POST /api/conge\n{user_id, date_debut, date_fin,\ntype, motif}
+activate A
+
+A -> DB : db.conges.aggregate(\n{user_id, statut: "VALIDE",\nannée en cours})
+activate DB
+DB --> A : joursUtilises = 12
+deactivate DB
+
+A -> A : soldeRestant =\nquotaAnnuel(18) - joursUtilises(12)\n= 6 jours
+
+alt #F2DEDE Solde insuffisant
+    A --> F : 400 {erreur:\n"Solde congés insuffisant\n(6 jours restants)"}
+    deactivate A
+    F --> E : Afficher erreur solde ❌
+    
+else #DFF0D8 Solde suffisant
+    A -> DB : db.conges.insertOne(\n{statut: "EN_ATTENTE",\ndateDemande: now()})
+    activate DB
+    DB --> A : Congé créé ✓
+    deactivate DB
+    A --> F : 201 {message:\n"Demande soumise avec succès"}
+    deactivate A
+    F --> E : Confirmation ✅\n"Votre demande a été envoyée"
+end
+deactivate F
+
+== Traitement par l'Administrateur ==
+
+AD -> F : Ouvrir page\ngestion des congés
+activate F
+
+F -> A : GET /api/conges\n?statut=en_attente
+activate A
+A -> DB : db.conges.find(\n{statut: "EN_ATTENTE"})\n.populate("user_id")
+activate DB
+DB --> A : demandes[]
+deactivate DB
+A --> F : 200 {demandes[]}
+deactivate A
+
+F --> AD : Afficher liste des\ndemandes en attente
+
+alt #DFF0D8 Accepter le congé
+    AD -> F : Cliquer "Accepter"
+    F -> A : PUT /api/conge/:id\n{statut: "VALIDE",\ntraite_par: adminId}
+    activate A
+    A -> DB : db.conges.updateOne(\n{statut: "VALIDE",\ntraite_par: adminId})
+    activate DB
+    DB --> A : Mis à jour ✓
+    deactivate DB
+    A --> F : 200 "Congé validé ✅"
+    deactivate A
+    F --> AD : Mise à jour liste
+
+else #F2DEDE Refuser le congé
+    AD -> F : Cliquer "Refuser"
+    F -> A : PUT /api/conge/:id\n{statut: "REFUSE",\ntraite_par: adminId}
+    activate A
+    A -> DB : db.conges.updateOne(\n{statut: "REFUSE",\ntraite_par: adminId})
+    activate DB
+    DB --> A : Mis à jour ✓
+    deactivate DB
+    A --> F : 200 "Congé refusé ❌"
+    deactivate A
+    F --> AD : Mise à jour liste
+end
+
+deactivate F
+
+@enduml

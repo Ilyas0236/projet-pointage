@@ -1,0 +1,99 @@
+@startuml Sequence_Pointage
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam sequenceArrowColor #2C3E50
+skinparam sequenceParticipantBackgroundColor #D6EAF8
+skinparam sequenceParticipantBorderColor #2980B9
+skinparam sequenceLifeLineBorderColor #2980B9
+skinparam sequenceActorBackgroundColor #AED6F1
+skinparam sequenceActorBorderColor #2C3E50
+skinparam sequenceGroupBackgroundColor #EBF5FB
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme de Séquence — Processus de Pointage Complet
+
+actor "Employé" as E #AED6F1
+participant "Frontend\n(Next.js)" as F #D6EAF8
+participant "Navigator\n.geolocation" as GPS #D5F5E3
+participant "Scanner\nQR Code" as QR #E8DAEF
+participant "API Backend" as A #F9E79F
+database "MongoDB" as DB #D5F5E3
+
+E -> F : Cliquer "Pointer"
+activate F
+
+F -> GPS : getCurrentPosition()
+activate GPS
+
+alt #F2DEDE GPS désactivé
+    GPS --> F : Erreur GeolocationPositionError
+    deactivate GPS
+    F --> E : "Veuillez activer votre GPS"
+    
+else #DFF0D8 GPS activé
+    GPS --> F : {latitude, longitude}
+    deactivate GPS
+    
+    F -> A : POST /api/pointage/verifier-zone\n{lat, lng}
+    activate A
+    A -> DB : db.zones.find({actif: true})
+    activate DB
+    DB --> A : zones[]
+    deactivate DB
+    A -> A : Calcul distance\n(formule Haversine)
+    
+    alt #F2DEDE Distance > rayonMetres
+        A --> F : 403 {erreur: "Hors zone autorisée"}
+        deactivate A
+        F --> E : Afficher erreur position ❌
+        
+    else #DFF0D8 Distance ≤ rayonMetres
+        A --> F : 200 {zone_id, zone_nom}
+        deactivate A
+        
+        F -> QR : Activer caméra + scanner
+        activate QR
+        E -> QR : Scanner le QR Code affiché
+        QR --> F : {qrCodeData}
+        deactivate QR
+        
+        F -> A : POST /api/pointage\n{user_id, lat, lng, qrCode, zone_id}
+        activate A
+        
+        A -> DB : db.qrcodes.findOne(\n{code: qrCode, actif: true})
+        activate DB
+        DB --> A : QR Code trouvé
+        deactivate DB
+        
+        A -> A : Vérifier dateExpiration > Date.now()
+        
+        alt #F2DEDE QR expiré ou invalide
+            A --> F : 400 {erreur: "QR Code expiré"}
+            F --> E : Erreur QR Code ❌
+            
+        else #DFF0D8 QR valide
+            A -> DB : db.pointages.findOne(\n{user_id, date: today}).sort({heure: -1})
+            activate DB
+            DB --> A : Dernier pointage (ou null)
+            deactivate DB
+            
+            A -> A : Déterminer type :\n- null ou SORTIE → ENTREE\n- ENTREE → SORTIE
+            
+            A -> DB : db.pointages.insertOne(\n{date, heure, type, lat, lng,\nvalide: true, qrCode_id, zone_id})
+            activate DB
+            DB --> A : Pointage sauvegardé ✓
+            deactivate DB
+            
+            A --> F : 201 {pointage,\ntype: "ENTREE", heure: "08:30"}
+            deactivate A
+            
+            F --> E : "Pointage enregistré ✅\n(Entrée à 08:30)"
+        end
+    end
+end
+
+deactivate F
+
+@enduml

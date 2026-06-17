@@ -1,0 +1,152 @@
+@startuml Diagramme_Classes
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #D6EAF8
+skinparam classBorderColor #2980B9
+skinparam classAttributeFontSize 11
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam arrowColor #2C3E50
+skinparam stereotypeFontSize 10
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 18
+skinparam enumBackgroundColor #FCF3CF
+skinparam enumBorderColor #F39C12
+
+title Diagramme de Classes\nApplication de Pointage Numérique
+
+' ============ ENUMS ============
+enum Role #FCF3CF {
+    ADMIN
+    EMPLOYE
+}
+
+enum TypePointage #FCF3CF {
+    ENTREE
+    SORTIE
+}
+
+enum TypeConge #FCF3CF {
+    ANNUEL
+    MALADIE
+    EXCEPTIONNEL
+}
+
+enum StatutConge #FCF3CF {
+    EN_ATTENTE
+    VALIDE
+    REFUSE
+}
+
+enum TypeAnomalie #FCF3CF {
+    RETARD
+    ABSENCE
+    SORTIE_ANTICIPEE
+    INSUFFISANCE_HEURES
+}
+
+' ============ CLASSES ============
+abstract class User #AED6F1 {
+    - _id : String
+    - nom : String
+    - email : String
+    - password : String
+    - role : Role
+    + seConnecter() : void
+    + seDeconnecter() : void
+}
+
+class Admin #F9E79F {
+    + validerConge(conge : Conge) : void
+    + refuserConge(conge : Conge) : void
+    + consulterDashboard() : void
+    + genererRapport() : void
+    + listerEmployes() : List
+    + consulterHistoriqueEmploye(employe : Employe) : List
+}
+
+class Employe #AED6F1 {
+    - matricule : String
+    - departement : String
+    + pointer(type : TypePointage) : void
+    + demanderConge() : void
+    + annulerConge(conge : Conge) : void
+    + consulterMonHistorique() : List
+}
+
+class Pointage #D5F5E3 {
+    - _id : String
+    - date : Date
+    - heure : Time
+    - type : TypePointage
+    - latitude : String
+    - longitude : String
+    - valide : Boolean
+    + enregistrer() : void
+    + valider() : void
+}
+
+class Conge #FADBD8 {
+    - _id : String
+    - date_debut : Date
+    - date_fin : Date
+    - type : TypeConge
+    - statut : StatutConge
+    - motif : String
+    + soumettre() : void
+    + annuler() : void
+    + calculerDuree() : Number
+}
+
+class QRCode #E8DAEF {
+    - _id : String
+    - valeur : String
+    - dateGeneration : DateTime
+    - dateExpiration : DateTime
+    - actif : Boolean
+    + generer() : void
+    + regenerer() : void
+    + estValide() : Boolean
+    + invalider() : void
+}
+
+class ZoneAutorisee #D5F5E3 {
+    - _id : String
+    - nom : String
+    - latitudeCentre : Number
+    - longitudeCentre : Number
+    - rayonMetres : Number
+    - actif : Boolean
+    + verifierPosition(lat, lng) : Boolean
+    + calculerDistance(lat, lng) : Number
+}
+
+class Anomalie #FADBD8 {
+    - _id : String
+    - date : Date
+    - type : TypeAnomalie
+    - description : String
+    - heuresTravaillees : Number
+    - seuilAttendu : Number
+    + detecter() : void
+}
+
+' ============ HERITAGE ============
+User <|-- Admin
+User <|-- Employe
+
+' ============ ASSOCIATIONS ============
+Admin "1" --> "0..*" Pointage : consulte
+Admin "1" --> "0..*" Conge : gère
+Admin "1" --> "0..*" QRCode : génère
+
+Employe "1" --> "0..*" Pointage : effectue
+Employe "1" --> "0..*" Conge : soumet
+Employe "1" --> "0..*" Anomalie : concerne
+
+Pointage "0..*" --> "1" QRCode : utilise
+Pointage "0..*" --> "1" ZoneAutorisee : vérifié dans
+QRCode "0..*" --> "1" ZoneAutorisee : associé à
+
+@enduml

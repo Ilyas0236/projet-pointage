@@ -1,0 +1,88 @@
+@startuml Diagramme_Activite_Pointage
+!theme cerulean
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #D6EAF8
+skinparam activityBorderColor #2980B9
+skinparam activityDiamondBackgroundColor #F9E79F
+skinparam activityDiamondBorderColor #F39C12
+skinparam arrowColor #2C3E50
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam titleFontSize 16
+
+title Diagramme d'Activité — Processus de Pointage
+
+start
+
+:L'employé clique sur **"Pointer"**;
+
+if (Utilisateur authentifié ?) then (Non)
+    :Rediriger vers\nla page de Login;
+    stop
+else (Oui)
+endif
+
+:Appel **navigator.geolocation**\ngetCurrentPosition();
+
+if (GPS activé ?) then (Non)
+    #FADBD8:Erreur :\n"Veuillez activer votre GPS";
+    stop
+else (Oui)
+endif
+
+:Récupérer les coordonnées\n**{latitude, longitude}**;
+
+:Envoyer la position\nau serveur backend;
+
+:Calcul de la distance\n**(formule Haversine)**\npar rapport à la zone autorisée;
+
+if (Position dans la\nzone autorisée ?) then (Non)
+    #FADBD8:Erreur :\n"Vous êtes hors de\nla zone autorisée";
+    stop
+else (Oui)
+endif
+
+:Activer le **scanner QR Code**\n(caméra du téléphone);
+
+:L'employé scanne\nle QR Code affiché;
+
+:Envoyer les données QR\nau serveur pour validation;
+
+if (QR Code valide\net non expiré ?) then (Non)
+    #FADBD8:Erreur :\n"QR Code invalide\nou expiré";
+    stop
+else (Oui)
+endif
+
+:Récupérer le **dernier pointage**\ndu jour pour cet employé;
+
+if (Dernier pointage\n= ENTREE ?) then (Oui)
+    :Type = **SORTIE**;
+    
+    :Calculer les heures\ntravaillées de la journée;
+    
+    if (Heures travaillées\n≥ 8h ?) then (Non)
+        #FCF8E3:⚠️ Créer une alerte\n**INSUFFISANCE HORAIRE**;
+    else (Oui)
+        #DFF0D8:✅ Journée complète;
+    endif
+    
+else (Non / null)
+    :Type = **ENTREE**;
+    
+    :Vérifier l'heure d'entrée;
+    
+    if (Heure > 08:30 ?) then (Oui)
+        #FCF8E3:⚠️ Créer une alerte\n**RETARD**;
+    else (Non)
+        #DFF0D8:✅ Entrée à l'heure;
+    endif
+endif
+
+:Enregistrer le pointage\nen base de données\n{date, heure, type, lat, lng,\nvalide: true, qrCode_id, zone_id};
+
+#DFF0D8:Afficher confirmation :\n**"Pointage enregistré ✅"**;
+
+stop
+
+@enduml
