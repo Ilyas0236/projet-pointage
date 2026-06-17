@@ -21,7 +21,7 @@ export default function PointerPage() {
 
   const [pointageResult, setPointageResult] = useState(null);
 
-
+  const isSubmitting = useRef(false);
 
   const html5QrCodeInstance = useRef(null);
 
@@ -129,6 +129,8 @@ export default function PointerPage() {
   };
 
   const submitPointage = async (scannedCode) => {
+    if (isSubmitting.current) return;
+    isSubmitting.current = true;
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -145,9 +147,16 @@ export default function PointerPage() {
       setPointageResult(response.data);
     } catch (err) {
       console.error('Pointage error:', err);
-      setScanError(err.response?.data?.error || 'Pointage échoué.');
+      let errorMsg = 'Pointage échoué.';
+      if (err.response?.data?.error) {
+        errorMsg = err.response.data.error;
+      } else if (err.message) {
+        errorMsg = `Erreur système : ${err.message}`;
+      }
+      setScanError(errorMsg);
     } finally {
       setLoading(false);
+      isSubmitting.current = false;
     }
   };
 
