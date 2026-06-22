@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       }
 
       const headers = ['Date', 'Heure', 'Employé', 'Matricule', 'Département', 'Type'];
-      const csvRows = [headers.join(',')];
+      const csvRows = [headers.join(';')];
 
       pointages.forEach(p => {
         const date = new Date(p.date).toLocaleDateString('fr-FR');
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
         const type = p.type || '';
         
         const row = [date, heure, `"${nom}"`, `"${matricule}"`, `"${departement}"`, type];
-        csvRows.push(row.join(','));
+        csvRows.push(row.join(';'));
       });
 
       const csvString = csvRows.join('\n');

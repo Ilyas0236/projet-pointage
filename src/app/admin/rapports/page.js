@@ -20,10 +20,10 @@ export default function AdminRapports() {
           innerValue = row[j].toLocaleString();
         }
         let result = innerValue.replace(/"/g, '""');
-        if (result.search(/("|,|\n)/g) >= 0)
+        if (result.search(/("|,|\n|;)/g) >= 0)
           result = '"' + result + '"';
         if (j > 0)
-          finalVal += ',';
+          finalVal += ';';
         finalVal += result;
       }
       return finalVal + '\n';
@@ -34,7 +34,7 @@ export default function AdminRapports() {
       csvFile += processRow(rows[i]);
     }
 
-    const blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + csvFile], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
