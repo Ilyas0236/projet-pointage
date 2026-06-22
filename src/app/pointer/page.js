@@ -37,8 +37,7 @@ export default function PointerPage() {
         const { latitude, longitude } = position.coords;
         setCoords({ latitude, longitude });
         coordsRef.current = { latitude, longitude };
-        setGpsStatus('ok');
-        startScanner();
+        verifyZone(latitude, longitude);
       },
       (error) => {
         console.error('GPS Error:', error);
@@ -48,9 +47,21 @@ export default function PointerPage() {
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
-
-
-
+  const verifyZone = async (lat, lng) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('/api/pointage/verifier-zone', { lat, lng }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      coordsRef.current.zone_id = response.data.zone_id;
+      setGpsStatus('ok');
+      startScanner();
+    } catch (err) {
+      console.error('Zone verification failed:', err);
+      setGpsStatus('error');
+      setGpsError(err.response?.data?.error || 'Hors zone autorisée.');
+    }
+  };
   const startScanner = async () => {
     setScannerActive(true);
     setScanError('');
@@ -115,6 +126,7 @@ export default function PointerPage() {
         latitude: currentCoords.latitude,
         longitude: currentCoords.longitude,
         qrCode: scannedCode,
+        zone_id: currentCoords.zone_id,
       };
 
       const response = await axios.post('/api/pointage', payload, {

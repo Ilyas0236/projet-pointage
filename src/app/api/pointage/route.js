@@ -60,7 +60,7 @@ export async function POST(req) {
       return Response.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { latitude, longitude, qrCode } = await req.json();
+    const { latitude, longitude, qrCode, zone_id } = await req.json();
 
     if (latitude === undefined || longitude === undefined || !qrCode) {
       return Response.json(
@@ -139,6 +139,7 @@ export async function POST(req) {
       longitude,
       valide: true,
       qrcode: activeQR._id,
+      zone: zone_id || undefined,
     });
 
     // 4. Anomaly checks
