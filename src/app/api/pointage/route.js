@@ -106,16 +106,21 @@ export async function POST(req) {
       }
     }
 
-    // Get latest pointage of the day to determine ENTREE/SORTIE
-    const lastPointage = await Pointage.findOne({
+    // Get ALL pointages of the day for the employee
+    const pointagesToday = await Pointage.find({
       employe: payload.userId,
       date: { $gte: todayStart, $lte: todayEnd },
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: 1 });
 
-    let pointageType = 'ENTREE';
-    if (lastPointage) {
-      pointageType = lastPointage.type === 'ENTREE' ? 'SORTIE' : 'ENTREE';
+    if (pointagesToday.length >= 4) {
+      return Response.json(
+        { error: 'Quota quotidien atteint (Maximum 4 pointages par jour).' },
+        { status: 400 }
+      );
     }
+
+    // Determine type: 0 -> ENTREE, 1 -> SORTIE, 2 -> ENTREE, 3 -> SORTIE
+    const pointageType = pointagesToday.length % 2 === 0 ? 'ENTREE' : 'SORTIE';
 
     // Current hour string
     const formatTime = (d) => {

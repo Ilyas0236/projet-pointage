@@ -108,6 +108,33 @@ export default function EmployeeDashboard() {
         </button>
       </div>
 
+      {/* DAILY SUMMARY (NEW) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="card p-4 border-l-4 border-l-primary flex flex-col justify-center">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Statut Actuel</p>
+          <p className="text-lg font-bold text-foreground truncate">{stats?.statutActuel || 'Chargement...'}</p>
+        </div>
+        <div className="card p-4 border-l-4 border-l-emerald-500 flex flex-col justify-center">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Pointages (Jour)</p>
+          <p className="text-xl font-bold text-foreground">{stats?.pointagesAujourdhui !== undefined ? stats.pointagesAujourdhui : '-'}</p>
+        </div>
+        <div className="card p-4 border-l-4 border-l-amber-500 flex flex-col justify-center">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Pointages Restants</p>
+          <p className="text-xl font-bold text-foreground">{stats?.pointagesRestants !== undefined ? stats.pointagesRestants : '-'}</p>
+        </div>
+        <div className="card p-4 border-l-4 border-l-rose-500 flex flex-col justify-center">
+          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Dernier Pointage</p>
+          <p className="text-sm font-bold text-foreground truncate">
+            {stats?.dernierPointage ? (
+              <span className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${stats.dernierPointage.type === 'ENTREE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                {stats.dernierPointage.heure} ({stats.dernierPointage.type === 'ENTREE' ? 'Entrée' : 'Sortie'})
+              </span>
+            ) : 'Aucun pointage'}
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
         {/* TRACK TIME (Live Stopwatch) */}

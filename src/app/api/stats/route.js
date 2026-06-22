@@ -137,10 +137,31 @@ export async function GET(req) {
         });
       }
 
+      // 4. Pointages Aujourd'hui et Statut
+      const pointagesToday = await Pointage.find({
+        employe: payload.userId,
+        date: { $gte: todayStart, $lte: todayEnd },
+      }).sort({ createdAt: 1 });
+
+      const pointagesAujourdhui = pointagesToday.length;
+      const pointagesRestants = Math.max(0, 4 - pointagesAujourdhui);
+      
+      let statutActuel = 'Absent';
+      if (pointagesAujourdhui === 1) statutActuel = 'Présent';
+      if (pointagesAujourdhui === 2) statutActuel = 'En pause déjeuner';
+      if (pointagesAujourdhui === 3) statutActuel = 'Présent';
+      if (pointagesAujourdhui >= 4) statutActuel = 'Journée terminée';
+
+      const dernierPointage = pointagesAujourdhui > 0 ? pointagesToday[pointagesToday.length - 1] : null;
+
       return Response.json({
         historique,
         heuresCeMois: Math.round(heuresCeMois),
         presenceSemaine,
+        pointagesAujourdhui,
+        pointagesRestants,
+        statutActuel,
+        dernierPointage
       }, { status: 200 });
     }
   } catch (error) {
