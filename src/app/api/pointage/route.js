@@ -6,6 +6,8 @@ import Notification from '@/models/Notification';
 import User from '@/models/User';
 import { verifyAuth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req) {
   try {
     await dbConnect();

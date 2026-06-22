@@ -3,6 +3,8 @@ import QRCode from '@/models/QRCode';
 import { verifyAuth } from '@/lib/auth';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req) {
   try {
     await dbConnect();
@@ -69,3 +71,4 @@ export async function POST(req) {
     );
   }
 }
+

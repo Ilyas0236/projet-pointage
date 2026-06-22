@@ -3,6 +3,8 @@ import Anomalie from '@/models/Anomalie';
 import Notification from '@/models/Notification';
 import { verifyAuth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req) {
   try {
     await dbConnect();
@@ -91,3 +93,4 @@ export async function PUT(req) {
     );
   }
 }
+

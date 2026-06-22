@@ -85,7 +85,7 @@ export default function AdminRapports() {
         ]);
       });
 
-      exportToCSV('Rapport_Pointages_Chronos.csv', rows);
+      exportToCSV('Rapport_Pointages_ScanTime.csv', rows);
       setSuccess('Exportation des pointages réussie !');
     } catch (err) {
       console.error(err);
@@ -131,7 +131,7 @@ export default function AdminRapports() {
         ]);
       });
 
-      exportToCSV('Rapport_Anomalies_Chronos.csv', rows);
+      exportToCSV('Rapport_Anomalies_ScanTime.csv', rows);
       setSuccess('Exportation des anomalies réussie !');
     } catch (err) {
       console.error(err);

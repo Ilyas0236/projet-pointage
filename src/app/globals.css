@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eef2ff;
-  --color-primary-100: #e0e7ff;
-  --color-primary-200: #c7d2fe;
-  --color-primary-300: #a5b4fc;
-  --color-primary-400: #818cf8;
-  --color-primary-500: #6366f1;
-  --color-primary-600: #4f46e5;
-  --color-primary-700: #4338ca;
-  --color-primary-800: #3730a3;
-  --color-primary-900: #312e81;
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
 
   --color-surface-50: #fafafa;
   --color-surface-100: #f4f4f5;
@@ -31,7 +31,7 @@
   --color-card-foreground: #fafafa;
   --color-popover: #18181b;
   --color-popover-foreground: #fafafa;
-  --color-primary: #4f46e5;
+  --color-primary: #0ea5e9;
   --color-primary-foreground: #ffffff;
   --color-secondary: #27272a;
   --color-secondary-foreground: #fafafa;
@@ -43,10 +43,10 @@
   --color-destructive-foreground: #ffffff;
   --color-border: #27272a;
   --color-input: #27272a;
-  --color-ring: #6366f1;
+  --color-ring: #0ea5e9;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-heading: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: 0.375rem;
   --radius-md: 0.75rem;
@@ -94,7 +94,7 @@
     --border-glass-strong: rgba(255, 255, 255, 0.15);
     --radius-full: 9999px;
     --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.45);
-    --primary-soft: rgba(99, 102, 241, 0.15);
+    --primary-soft: rgba(14, 165, 233, 0.15);
     --success: #10b981;
     --success-bg: rgba(16, 185, 129, 0.12);
     --success-border: rgba(16, 185, 129, 0.35);
@@ -131,7 +131,7 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary-500 shadow-[0_1px_2px_rgba(0,0,0,0.4),_inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-[0.98] h-10 px-4 py-2;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium ring-offset-background transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary-400 shadow-[0_2px_8px_rgba(14,165,233,0.25),_inset_0_1px_0_rgba(255,255,255,0.15)] active:scale-[0.98] h-10 px-4 py-2;
   }
 
   .btn-secondary {
@@ -155,7 +155,7 @@
   }
 
   .glass-card {
-    @apply rounded-lg border border-border bg-card/80 backdrop-blur-xl text-card-foreground shadow-lg;
+    @apply rounded-xl border border-border bg-card/70 backdrop-blur-2xl text-card-foreground shadow-xl;
   }
 
   .badge {
@@ -358,4 +358,20 @@
   100% {
     background-position: -200% 0;
   }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Text gradient utility */
+.text-gradient {
+  background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

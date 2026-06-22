@@ -3,6 +3,8 @@ import Conge from '@/models/Conge';
 import Notification from '@/models/Notification';
 import { verifyAuth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const QUOTA_ANNUEL = 25; // Annual leave quota in days
 
 export async function GET(req) {
@@ -157,3 +159,4 @@ export async function POST(req) {
     );
   }
 }
+

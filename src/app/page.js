@@ -39,7 +39,7 @@ export default function HomePage() {
     >
       <div style={{ textAlign: 'center' }}>
         <h2 className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: 800 }}>
-          Chronos
+          ScanTime
         </h2>
         <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>
           Chargement en cours...
