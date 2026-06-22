@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -52,6 +53,53 @@ export default function AdminDashboard() {
     fetchStats();
   }, [router]);
 
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/pointage', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      const pointages = res.data;
+      if (!pointages || pointages.length === 0) {
+        alert("Aucun pointage à exporter");
+        return;
+      }
+
+      const headers = ['Date', 'Heure', 'Employé', 'Matricule', 'Département', 'Type'];
+      const csvRows = [headers.join(',')];
+
+      pointages.forEach(p => {
+        const date = new Date(p.date).toLocaleDateString('fr-FR');
+        const heure = p.heure || '';
+        const nom = p.employe?.nom || 'Inconnu';
+        const matricule = p.employe?.matricule || 'N/A';
+        const departement = p.employe?.departement || 'N/A';
+        const type = p.type || '';
+        
+        const row = [date, heure, `"${nom}"`, `"${matricule}"`, `"${departement}"`, type];
+        csvRows.push(row.join(','));
+      });
+
+      const csvString = csvRows.join('\n');
+      const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' }); // \uFEFF for Excel UTF-8 BOM
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `export_pointages_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (error) {
+      console.error("Erreur lors de l'exportation:", error);
+      alert("Une erreur est survenue lors de l'exportation.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -89,11 +137,19 @@ export default function AdminDashboard() {
           <p className="text-muted-foreground mt-1">Vue d'ensemble de l'activité de l'entreprise</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="btn-secondary flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Exporter
+          <button 
+            className="btn-secondary flex items-center gap-2"
+            onClick={handleExport}
+            disabled={isExporting}
+          >
+            {isExporting ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-foreground"></div>
+            ) : (
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            )}
+            {isExporting ? 'Exportation...' : 'Exporter'}
           </button>
           <button 
             className="btn-primary flex items-center gap-2"
