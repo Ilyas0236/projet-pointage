@@ -24,9 +24,7 @@ export async function POST(req) {
     await dbConnect();
     
     // Verify authentication
-    const authHeader = req.headers.get('authorization');
-    const token = authHeader?.split(' ')[1] || req.cookies.get('token')?.value;
-    const payload = await verifyAuth(token);
+    const payload = await verifyAuth(req);
     
     if (!payload || payload.role !== 'EMPLOYE') {
       return Response.json({ error: 'Non autorisé.' }, { status: 401 });
