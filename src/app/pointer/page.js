@@ -11,6 +11,7 @@ export default function PointerPage() {
   const [gpsStatus, setGpsStatus] = useState('checking'); // checking, ok, error
   const [gpsError, setGpsError] = useState('');
   const [coords, setCoords] = useState(null);
+  const coordsRef = useRef(null);
 
   const [scannerActive, setScannerActive] = useState(false);
   const [scanResult, setScanResult] = useState('');
@@ -35,6 +36,7 @@ export default function PointerPage() {
       (position) => {
         const { latitude, longitude } = position.coords;
         setCoords({ latitude, longitude });
+        coordsRef.current = { latitude, longitude };
         setGpsStatus('ok');
         startScanner();
       },
@@ -108,9 +110,10 @@ export default function PointerPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
+      const currentCoords = coordsRef.current || coords;
       const payload = {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
+        latitude: currentCoords.latitude,
+        longitude: currentCoords.longitude,
         qrCode: scannedCode,
       };
 
