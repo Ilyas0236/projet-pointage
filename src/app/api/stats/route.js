@@ -96,14 +96,18 @@ export async function GET(req) {
       });
 
       Object.values(entriesByDay).forEach(dayPointages => {
-        const entrees = dayPointages.filter(p => p.type === 'ENTREE' || p.type === 'entree');
-        const sorties = dayPointages.filter(p => p.type === 'SORTIE' || p.type === 'sortie');
-        if (entrees.length > 0 && sorties.length > 0) {
-          const [eh, em] = entrees[0].heure.split(':').map(Number);
-          const [sh, sm] = sorties[sorties.length - 1].heure.split(':').map(Number);
-          const worked = (sh * 60 + sm) - (eh * 60 + em);
-          if (worked > 0) heuresCeMois += worked / 60;
+        let workedMinutes = 0;
+        if (dayPointages.length >= 2) {
+          const [e1h, e1m] = dayPointages[0].heure.split(':').map(Number);
+          const [s1h, s1m] = dayPointages[1].heure.split(':').map(Number);
+          workedMinutes += (s1h * 60 + s1m) - (e1h * 60 + e1m);
         }
+        if (dayPointages.length >= 4) {
+          const [e2h, e2m] = dayPointages[2].heure.split(':').map(Number);
+          const [s2h, s2m] = dayPointages[3].heure.split(':').map(Number);
+          workedMinutes += (s2h * 60 + s2m) - (e2h * 60 + e2m);
+        }
+        if (workedMinutes > 0) heuresCeMois += workedMinutes / 60;
       });
 
       // 3. Presence semaine (Chart Data)
@@ -122,14 +126,18 @@ export async function GET(req) {
         
         const dayPointages = entriesByDay[dayStr] || [];
         let heuresDay = 0;
-        const entrees = dayPointages.filter(p => p.type === 'ENTREE' || p.type === 'entree');
-        const sorties = dayPointages.filter(p => p.type === 'SORTIE' || p.type === 'sortie');
-        if (entrees.length > 0 && sorties.length > 0) {
-          const [eh, em] = entrees[0].heure.split(':').map(Number);
-          const [sh, sm] = sorties[sorties.length - 1].heure.split(':').map(Number);
-          const worked = (sh * 60 + sm) - (eh * 60 + em);
-          if (worked > 0) heuresDay = worked / 60;
+        let workedMinutes = 0;
+        if (dayPointages.length >= 2) {
+          const [e1h, e1m] = dayPointages[0].heure.split(':').map(Number);
+          const [s1h, s1m] = dayPointages[1].heure.split(':').map(Number);
+          workedMinutes += (s1h * 60 + s1m) - (e1h * 60 + e1m);
         }
+        if (dayPointages.length >= 4) {
+          const [e2h, e2m] = dayPointages[2].heure.split(':').map(Number);
+          const [s2h, s2m] = dayPointages[3].heure.split(':').map(Number);
+          workedMinutes += (s2h * 60 + s2m) - (e2h * 60 + e2m);
+        }
+        if (workedMinutes > 0) heuresDay = workedMinutes / 60;
 
         presenceSemaine.push({
           name: dayName,
