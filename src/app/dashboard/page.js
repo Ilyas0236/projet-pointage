@@ -231,9 +231,9 @@ export default function EmployeeDashboard() {
             {stats?.historique?.length > 0 ? (
               stats.historique.slice(0, 5).map((p, idx) => (
                 <div key={idx} className="flex items-center gap-4 group">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${p.type === 'entree' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border-rose-500/20 text-rose-500'}`}>
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border ${(p.type === 'entree' || p.type === 'ENTREE') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-rose-500/10 border-rose-500/20 text-rose-500'}`}>
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      {p.type === 'entree' 
+                      {(p.type === 'entree' || p.type === 'ENTREE')
                         ? <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                         : <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       }
@@ -241,7 +241,7 @@ export default function EmployeeDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">
-                      {p.type === 'entree' ? 'Pointage Entrée' : 'Pointage Sortie'}
+                      {(p.type === 'entree' || p.type === 'ENTREE') ? 'Pointage Entrée' : 'Pointage Sortie'}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
                       {new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}
