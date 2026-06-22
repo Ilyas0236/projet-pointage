@@ -18,7 +18,10 @@ export default function EmployeeDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get('/api/stats');
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         const data = res.data;
         setStats(data);
         

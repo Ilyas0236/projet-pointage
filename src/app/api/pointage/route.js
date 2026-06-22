@@ -40,7 +40,6 @@ export async function GET(req) {
 
     const pointages = await Pointage.find(filter)
       .populate('employe', 'nom email matricule departement')
-      .populate('zone', 'nom')
       .sort({ createdAt: -1 });
 
     return Response.json(pointages, { status: 200 });
