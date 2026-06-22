@@ -362,8 +362,8 @@ export default function AdminAnomalies() {
                               </div>
                             )}
                             {a.justificationFichier && (
-                              <a href={a.justificationFichier} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
-                                📎 Voir le document
+                              <a href={a.justificationFichier} download={`justificatif-${a.employe?.nom || 'employe'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+                                📎 Télécharger le document
                               </a>
                             )}
                             <div style={{ display: 'flex', gap: '6px' }}>
