@@ -86,36 +86,48 @@ export default function AnomaliesEmployee() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div className="skeleton skeleton-circle" style={{ width: '40px', height: '40px' }}></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="bento-container animate-fade-in">
-      <div className="bento-col-12" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>Mes Anomalies</h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '4px' }}>Consultez vos anomalies et justifiez-les.</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-surface-400 font-heading">
+            Mes Anomalies
+          </h1>
+          <p className="text-muted-foreground mt-2 font-medium">Consultez vos anomalies et justifiez-les.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="badge badge-error text-sm px-3 py-1">{anomalies.length} anomalie{anomalies.length > 1 ? 's' : ''}</span>
         </div>
       </div>
 
-      <div className="bento-col-12 glass-card" style={{ padding: '0', overflow: 'hidden' }}>
+      {/* Table Card */}
+      <div className="card p-0 overflow-hidden">
         {anomalies.length === 0 ? (
-          <div className="empty-state">
-            <h4 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>Aucune anomalie</h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Vous n'avez aucune anomalie détectée. Beau travail !</p>
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-4">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h4 className="text-lg font-bold text-foreground mb-1">Aucune anomalie</h4>
+            <p className="text-sm text-muted-foreground max-w-xs">Vous n'avez aucune anomalie détectée. Beau travail !</p>
           </div>
         ) : (
-          <div className="table-container" style={{ border: 'none', borderRadius: 0 }}>
+          <div className="overflow-x-auto">
             <table className="glass-table">
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Type</th>
                   <th>Description</th>
-                  <th>Statut Justificatif</th>
+                  <th>Justificatif</th>
                   <th>Résolu</th>
                   <th>Action</th>
                 </tr>
@@ -123,7 +135,7 @@ export default function AnomaliesEmployee() {
               <tbody>
                 {anomalies.map((a) => (
                   <tr key={a._id}>
-                    <td style={{ fontWeight: 500 }}>
+                    <td className="font-semibold text-foreground whitespace-nowrap">
                       {new Date(a.date).toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' })}
                     </td>
                     <td>
@@ -131,9 +143,9 @@ export default function AnomaliesEmployee() {
                         {a.type.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td style={{ color: 'var(--text-secondary)' }}>{a.description}</td>
+                    <td className="text-muted-foreground max-w-[200px] truncate">{a.description}</td>
                     <td>
-                      {a.statutJustification === 'AUCUNE' && <span className="badge" style={{background:'#333', color:'white'}}>Aucun</span>}
+                      {a.statutJustification === 'AUCUNE' && <span className="badge bg-surface-700 text-surface-300 border-surface-600">Aucun</span>}
                       {a.statutJustification === 'EN_ATTENTE' && <span className="badge badge-warning">En attente</span>}
                       {a.statutJustification === 'ACCEPTEE' && <span className="badge badge-success">Acceptée</span>}
                       {a.statutJustification === 'REFUSEE' && <span className="badge badge-error">Refusée</span>}
@@ -145,13 +157,14 @@ export default function AnomaliesEmployee() {
                     </td>
                     <td>
                       {!a.resolu && a.statutJustification !== 'EN_ATTENTE' && a.statutJustification !== 'ACCEPTEE' && (
-                        <button className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => handleOpenModal(a)}>
+                        <button className="btn-primary h-8 px-3 text-xs" onClick={() => handleOpenModal(a)}>
                           Justifier
                         </button>
                       )}
                       {a.commentaireAdmin && (
-                        <div style={{ marginTop: '5px', fontSize: '0.8rem', color: 'var(--error)' }}>
-                          <strong>Admin:</strong> {a.commentaireAdmin}
+                        <div className="mt-2 text-xs text-destructive flex items-start gap-1">
+                          <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01" /></svg>
+                          <span><strong>Admin:</strong> {a.commentaireAdmin}</span>
                         </div>
                       )}
                     </td>
@@ -163,31 +176,37 @@ export default function AnomaliesEmployee() {
         )}
       </div>
 
+      {/* Modal */}
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="glass-card" style={{ padding: '24px', width: '100%', maxWidth: '500px' }}>
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 600, marginBottom: '16px' }}>Justifier l'anomalie</h2>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+          <div className="card p-6 w-full max-w-lg animate-in slide-in-from-bottom-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-foreground font-heading">Justifier l'anomalie</h2>
+              <button onClick={handleCloseModal} className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
             <form onSubmit={handleSubmitJustification}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Message (optionnel)</label>
+              <div className="mb-4">
+                <label className="block mb-2 text-sm text-muted-foreground font-medium">Message (optionnel)</label>
                 <textarea 
-                  className="input-field" 
+                  className="input-field min-h-[80px] resize-none" 
                   rows="3" 
                   value={message} 
                   onChange={(e) => setMessage(e.target.value)} 
                   placeholder="Expliquez la raison de cette anomalie..."
                 ></textarea>
               </div>
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Fichier justificatif (certificat, photo...)</label>
+              <div className="mb-6">
+                <label className="block mb-2 text-sm text-muted-foreground font-medium">Fichier justificatif (certificat, photo...)</label>
                 <input 
                   type="file" 
-                  className="input-field" 
+                  className="input-field file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-primary-500/10 file:text-primary-400 file:font-medium file:text-sm hover:file:bg-primary-500/20 file:cursor-pointer" 
                   onChange={(e) => setFile(e.target.files[0])}
                   accept="image/*,.pdf,.doc,.docx"
                 />
               </div>
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <div className="flex gap-3 justify-end">
                 <button type="button" className="btn-secondary" onClick={handleCloseModal} disabled={isSubmitting}>Annuler</button>
                 <button type="submit" className="btn-primary" disabled={isSubmitting}>
                   {isSubmitting ? 'Envoi...' : 'Envoyer'}

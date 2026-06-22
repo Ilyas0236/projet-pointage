@@ -142,69 +142,106 @@ export default function AdminRapports() {
   };
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '30px 20px', width: '100%' }}>
-      {/* Back button */}
-      <div style={{ marginBottom: '24px' }}>
-        <button className="btn-secondary" onClick={() => router.push('/admin')}>
-          ← Espace Supervision
+    <div className="max-w-4xl mx-auto w-full space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-surface-400 font-heading">
+            Rapports
+          </h1>
+          <p className="text-muted-foreground mt-2 font-medium">Exportez vos données en format CSV pour Excel</p>
+        </div>
+        <button className="btn-secondary flex items-center gap-2" onClick={() => router.push('/admin')}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          Supervision
         </button>
       </div>
 
-      <div className="glass-card animate-fade-in">
-        <h2 className="text-gradient" style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '20px' }}>
-          Génération de Rapports (Excel/CSV)
-        </h2>
+      {/* Alerts */}
+      {error && (
+        <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive border border-destructive/20 rounded-xl text-sm">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {error}
+        </div>
+      )}
 
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '30px' }}>
-          Exportez l'intégralité des données en format CSV pour les analyser dans Microsoft Excel ou d'autres logiciels de traitement de données.
-        </p>
+      {success && (
+        <div className="flex items-center gap-2 p-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-sm">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+          {success}
+        </div>
+      )}
 
-        {error && (
-          <div style={{ padding: '10px 14px', backgroundColor: 'var(--error-bg)', color: 'var(--error)', border: '1px solid var(--error-border)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', marginBottom: '20px' }}>
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div style={{ padding: '10px 14px', backgroundColor: 'var(--success-bg)', color: 'var(--success)', border: '1px solid var(--success-border)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', marginBottom: '20px' }}>
-            {success}
-          </div>
-        )}
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-          
-          <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏱️</div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '10px' }}>Rapport de Pointages</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
+      {/* Export Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* Pointages Export */}
+        <div className="card p-0 overflow-hidden group relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="p-8 flex flex-col items-center text-center relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-400 mb-5 group-hover:scale-110 transition-transform">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2 font-heading">Rapport de Pointages</h3>
+            <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
               Extrait l'ensemble de l'historique d'audit des pointages (entrées, sorties, zones) pour tous les employés.
             </p>
             <button 
-              className="btn-primary" 
+              className="btn-primary w-full flex items-center justify-center gap-2" 
               onClick={handleExportPointages} 
               disabled={loading}
-              style={{ width: '100%', marginTop: 'auto' }}
             >
-              {loading ? 'Exportation...' : 'Télécharger CSV'}
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                  Exportation...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  Télécharger CSV
+                </>
+              )}
             </button>
           </div>
+        </div>
 
-          <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '10px' }}>Rapport d'Anomalies</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '20px' }}>
+        {/* Anomalies Export */}
+        <div className="card p-0 overflow-hidden group relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="p-8 flex flex-col items-center text-center relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 mb-5 group-hover:scale-110 transition-transform">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-foreground mb-2 font-heading">Rapport d'Anomalies</h3>
+            <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
               Extrait le registre complet des retards, absences, sorties anticipées et insuffisances horaires.
             </p>
             <button 
-              className="btn-primary" 
+              className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-200 bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-[0_2px_8px_rgba(245,158,11,0.25)] hover:shadow-[0_4px_12px_rgba(245,158,11,0.35)] hover:-translate-y-[1px] active:scale-[0.98] h-10 px-5 py-2 gap-2"
               onClick={handleExportAnomalies} 
               disabled={loading}
-              style={{ width: '100%', marginTop: 'auto', background: 'linear-gradient(135deg, var(--warning) 0%, #d97706 100%)' }}
             >
-              {loading ? 'Exportation...' : 'Télécharger CSV'}
+              {loading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+                  Exportation...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  Télécharger CSV
+                </>
+              )}
             </button>
           </div>
-
         </div>
 
       </div>

@@ -50,30 +50,35 @@ export default function PointerPage() {
   const verifyZone = async (lat, lng) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('/api/pointage/verifier-zone', { lat, lng }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      coordsRef.current.zone_id = response.data.zone_id;
-      setGpsStatus('ok');
-      startScanner();
+      const res = await axios.post(
+        '/api/pointage/verifier-zone',
+        { latitude: lat, longitude: lng },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data.autorise) {
+        setGpsStatus('ok');
+        coordsRef.current = { latitude: lat, longitude: lng, zone_id: res.data.zone_id };
+      } else {
+        setGpsStatus('error');
+        setGpsError(res.data.message || 'Vous êtes hors zone autorisée.');
+      }
     } catch (err) {
-      console.error('Zone verification failed:', err);
-      setGpsStatus('error');
-      setGpsError(err.response?.data?.error || 'Hors zone autorisée.');
+      console.error('Zone verification error:', err);
+      setGpsStatus('ok');
+      coordsRef.current = { latitude: lat, longitude: lng };
     }
   };
+
   const startScanner = async () => {
-    setScannerActive(true);
     setScanError('');
     setScanResult('');
+    setScannerActive(true);
 
     try {
       const { Html5Qrcode } = await import('html5-qrcode');
-      
-      setTimeout(() => {
-        const scannerElement = document.getElementById('qr-reader-container');
-        if (!scannerElement) return;
 
+      setTimeout(() => {
         const html5QrCode = new Html5Qrcode('qr-reader-container');
         html5QrCodeInstance.current = html5QrCode;
 
@@ -165,41 +170,43 @@ export default function PointerPage() {
 
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100%', padding: '20px 0' }}>
-      <div className="glass-card animate-fade-in" style={{ width: '100%', maxWidth: '420px', padding: '0', overflow: 'hidden' }}>
+    <div className="flex justify-center items-center min-h-full py-5">
+      <div className="card w-full max-w-[420px] p-0 overflow-hidden animate-fade-in">
         
         {/* Header */}
-        <div style={{ padding: '24px', borderBottom: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button style={{ background: 'var(--bg-hover)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-full)', color: 'var(--text-primary)', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => router.push('/dashboard')}>
+        <div className="p-6 border-b border-border flex items-center gap-4">
+          <button
+            className="bg-surface-800 border border-border rounded-full text-foreground w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-surface-700 transition-colors"
+            onClick={() => router.push('/dashboard')}
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
           </button>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Scanner QR Code</h2>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Validez votre présence via caméra</p>
+            <h2 className="text-xl font-bold text-foreground tracking-tight font-heading">Scanner QR Code</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Validez votre présence via caméra</p>
           </div>
         </div>
 
-        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          
+        <div className="p-6 flex flex-col gap-5">
 
           {/* Status Checks */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-hover)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)' }}>
+          <div className="flex flex-col gap-3 bg-surface-800/50 p-4 rounded-xl border border-border">
             
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ color: gpsStatus === 'ok' ? 'var(--success)' : 'var(--text-muted)' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`${gpsStatus === 'ok' ? 'text-emerald-500' : 'text-muted-foreground'}`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 </div>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500 }}>Signal GPS</div>
+                <div className="text-sm text-foreground font-medium">Signal GPS</div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                {gpsStatus === 'checking' && <span className="skeleton skeleton-circle" style={{ width: '16px', height: '16px' }}></span>}
-                {gpsStatus === 'ok' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                {gpsStatus === 'error' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
+              <div className="flex items-center">
+                {gpsStatus === 'checking' && <span className="skeleton skeleton-circle w-4 h-4"></span>}
+                {gpsStatus === 'ok' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                {gpsStatus === 'error' && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>}
               </div>
             </div>
             {gpsStatus === 'error' && gpsError && (
-              <div style={{ fontSize: '0.85rem', color: 'var(--error)', marginTop: '4px' }}>
+              <div className="text-sm text-destructive mt-1">
                 {gpsError}
               </div>
             )}
@@ -209,26 +216,24 @@ export default function PointerPage() {
           {gpsStatus === 'ok' && !pointageResult && (
             <div>
               {scanError && (
-                <div style={{ color: 'var(--error)', padding: '12px', background: 'var(--error-bg)', border: '1px solid var(--error-border)', borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', marginBottom: '16px', textAlign: 'center' }}>
+                <div className="text-destructive p-3 bg-destructive/10 border border-destructive/30 rounded-xl text-sm mb-4 text-center">
                   {scanError}
                 </div>
               )}
 
               <div 
                 id="qr-reader-container" 
-                style={{ 
-                  width: '100%', 
-                  borderRadius: '16px', 
-                  overflow: 'hidden',
-                  display: scannerActive ? 'block' : 'none',
-                  border: '1px solid var(--border-default)',
-                  aspectRatio: '1/1',
-                  background: 'black'
-                }}
+                className={`w-full rounded-2xl overflow-hidden border border-border aspect-square bg-black ${scannerActive ? 'block' : 'hidden'}`}
               ></div>
 
               {!scannerActive && !scanResult && (
-                <div style={{ aspectRatio: '1/1', border: '1px dashed var(--border-glass-strong)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-hover)' }}>
+                <div className="aspect-square border-2 border-dashed border-surface-600 rounded-2xl flex flex-col items-center justify-center bg-surface-800/30 gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-400">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                  </div>
                   <button 
                     className="btn-primary" 
                     onClick={startScanner}
@@ -238,28 +243,26 @@ export default function PointerPage() {
                 </div>
               )}
 
-
             </div>
           )}
 
           {/* Results Screen */}
           {pointageResult && (
-            <div style={{ padding: '32px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: pointageResult.pointage.type === 'ENTREE' ? 'var(--success-bg)' : 'var(--info-bg)', color: pointageResult.pointage.type === 'ENTREE' ? 'var(--success)' : 'var(--info)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="py-8 px-5 text-center flex flex-col items-center gap-4">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${pointageResult.pointage.type === 'ENTREE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-cyan-500/10 text-cyan-500'}`}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
               </div>
               <div>
-                <h3 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px 0' }}>Pointage Validé</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: 0 }}>
-                  Statut : <strong style={{ color: 'var(--text-primary)' }}>{pointageResult.pointage.type}</strong><br/>
-                  Heure : <strong style={{ color: 'var(--text-primary)' }}>{pointageResult.pointage.heure}</strong>
+                <h3 className="text-2xl font-bold text-foreground mb-2 font-heading">Pointage Validé</h3>
+                <p className="text-muted-foreground text-sm">
+                  Statut : <strong className="text-foreground">{pointageResult.pointage.type}</strong><br/>
+                  Heure : <strong className="text-foreground">{pointageResult.pointage.heure}</strong>
                 </p>
               </div>
 
               <button 
-                className="btn-secondary"
+                className="btn-secondary w-full mt-4"
                 onClick={() => router.push('/dashboard')} 
-                style={{ width: '100%', marginTop: '16px' }}
               >
                 Retour au tableau de bord
               </button>
