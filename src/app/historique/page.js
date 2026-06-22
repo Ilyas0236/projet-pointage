@@ -44,8 +44,8 @@ export default function EmployeeHistorique() {
     );
   }
 
-  const entriesCount = pointages.filter((p) => p.type === 'ENTREE').length;
-  const exitsCount = pointages.filter((p) => p.type === 'SORTIE').length;
+  const entriesCount = pointages.filter((p) => p.type === 'ENTREE' || p.type === 'entree').length;
+  const exitsCount = pointages.filter((p) => p.type === 'SORTIE' || p.type === 'sortie').length;
 
   return (
     <div className="bento-container animate-fade-in">
@@ -123,8 +123,8 @@ export default function EmployeeHistorique() {
                         {p.heure}
                       </td>
                       <td>
-                        <span className={`badge ${p.type === 'ENTREE' ? 'badge-success' : 'badge-info'}`}>
-                          {p.type}
+                        <span className={`badge ${(p.type === 'ENTREE' || p.type === 'entree') ? 'badge-success' : 'badge-info'}`}>
+                          {p.type.toUpperCase()}
                         </span>
                       </td>
                       <td style={{ color: 'var(--text-secondary)' }}>

@@ -28,10 +28,12 @@ export default function EmployeeDashboard() {
           const todaysPointages = data.historique.filter(p => new Date(p.date).toDateString() === todayStr);
           if (todaysPointages.length > 0) {
             const last = todaysPointages[0]; // First in array is the most recent
-            if (last.type === 'entree') {
+            if (last.type === 'entree' || last.type === 'ENTREE') {
               // Construct Date object from pointage date and heure
               const datePart = last.date.split('T')[0];
               setActiveSession(new Date(`${datePart}T${last.heure}:00`));
+            } else {
+              setActiveSession(null);
             }
           }
         }
@@ -51,21 +53,31 @@ export default function EmployeeDashboard() {
   // Live Stopwatch Effect
   useEffect(() => {
     let interval;
-    if (activeSession) {
+    if (stats) {
+      const baseMs = stats.heuresAujourdhuiMs || 0;
+      
       const tick = () => {
-        const diffMs = new Date() - activeSession;
-        if (diffMs > 0) {
-          const h = Math.floor(diffMs / 3600000).toString().padStart(2, '0');
-          const m = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0');
-          const s = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0');
+        let totalMs = baseMs;
+        if (activeSession) {
+          const diffMs = new Date() - activeSession;
+          if (diffMs > 0) totalMs += diffMs;
+        }
+
+        if (totalMs > 0) {
+          const h = Math.floor(totalMs / 3600000).toString().padStart(2, '0');
+          const m = Math.floor((totalMs % 3600000) / 60000).toString().padStart(2, '0');
+          const s = Math.floor((totalMs % 60000) / 1000).toString().padStart(2, '0');
           setElapsed(`${h}:${m}:${s}`);
+        } else {
+          setElapsed('00:00:00');
         }
       };
+      
       tick();
       interval = setInterval(tick, 1000);
     }
     return () => clearInterval(interval);
-  }, [activeSession]);
+  }, [activeSession, stats]);
 
   if (loading) {
     return (
@@ -158,7 +170,9 @@ export default function EmployeeDashboard() {
                 Démarré à {activeSession.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
               </>
             ) : (
-              'En attente de pointage (Entrée)'
+              stats?.pointagesAujourdhui >= 4 
+                ? 'Journée terminée' 
+                : 'En attente de pointage (Entrée)'
             )}
           </div>
         </div>

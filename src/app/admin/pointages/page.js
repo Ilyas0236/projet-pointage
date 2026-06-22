@@ -167,21 +167,18 @@ export default function AdminPointages() {
             <table className="w-full text-sm text-left">
               <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                 <tr>
+                  <th className="px-6 py-4 font-semibold">Employé</th>
                   <th className="px-6 py-4 font-semibold">Date</th>
-                  <th className="px-6 py-4 font-semibold">Collaborateur</th>
                   <th className="px-6 py-4 font-semibold">Heure</th>
                   <th className="px-6 py-4 font-semibold">Type</th>
-                  <th className="px-6 py-4 font-semibold">Coordonnées GPS</th>
                   <th className="px-6 py-4 font-semibold">Statut</th>
+                  <th className="px-6 py-4 font-semibold">GPS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {pointages.map((p) => {
                   return (
                     <tr key={p._id} className="hover:bg-muted/50 transition-colors bg-card">
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground">
-                        {new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
-                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
@@ -195,6 +192,9 @@ export default function AdminPointages() {
                           </div>
                         </div>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-foreground">
+                        {new Date(p.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-mono text-base font-bold text-foreground bg-muted/50 px-2 py-1 rounded-md border border-border">
                           {p.heure}
@@ -205,6 +205,19 @@ export default function AdminPointages() {
                           <span className="badge badge-success bg-emerald-500/10 text-emerald-500 border-emerald-500/20">ENTRÉE</span>
                         ) : (
                           <span className="badge badge-info bg-cyan-500/10 text-cyan-500 border-cyan-500/20">SORTIE</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {p.valide ? (
+                          <span className="flex items-center gap-1.5 text-emerald-500 text-sm font-medium">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                            Valide
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 text-rose-500 text-sm font-medium">
+                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                            Invalide
+                          </span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-xs font-mono text-muted-foreground">
@@ -220,19 +233,6 @@ export default function AdminPointages() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </a>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {p.valide ? (
-                          <span className="flex items-center gap-1.5 text-emerald-500 text-sm font-medium">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                            Valide
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 text-rose-500 text-sm font-medium">
-                            <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
-                            Invalide
-                          </span>
-                        )}
                       </td>
                     </tr>
                   );

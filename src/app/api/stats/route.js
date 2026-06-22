@@ -154,6 +154,19 @@ export async function GET(req) {
 
       const dernierPointage = pointagesAujourdhui > 0 ? pointagesToday[pointagesToday.length - 1] : null;
 
+      // 5. Calcul des heures travaillées aujourd'hui (complétées)
+      let heuresAujourdhuiMs = 0;
+      if (pointagesAujourdhui >= 2) {
+        const [e1h, e1m] = pointagesToday[0].heure.split(':').map(Number);
+        const [s1h, s1m] = pointagesToday[1].heure.split(':').map(Number);
+        heuresAujourdhuiMs += ((s1h * 60 + s1m) - (e1h * 60 + e1m)) * 60000;
+      }
+      if (pointagesAujourdhui >= 4) {
+        const [e2h, e2m] = pointagesToday[2].heure.split(':').map(Number);
+        const [s2h, s2m] = pointagesToday[3].heure.split(':').map(Number);
+        heuresAujourdhuiMs += ((s2h * 60 + s2m) - (e2h * 60 + e2m)) * 60000;
+      }
+
       return Response.json({
         historique,
         heuresCeMois: Math.round(heuresCeMois),
@@ -161,7 +174,8 @@ export async function GET(req) {
         pointagesAujourdhui,
         pointagesRestants,
         statutActuel,
-        dernierPointage
+        dernierPointage,
+        heuresAujourdhuiMs
       }, { status: 200 });
     }
   } catch (error) {
