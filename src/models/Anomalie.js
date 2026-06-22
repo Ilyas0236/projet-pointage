@@ -14,7 +14,7 @@ const AnomalieSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['RETARD', 'ABSENCE', 'SORTIE_ANTICIPEE', 'INSUFFISANCE_HEURES'],
+      enum: ['RETARD', 'ABSENCE', 'SORTIE_ANTICIPEE', 'INSUFFISANCE_HEURES', 'ABSENCE_MATIN', 'ABSENCE_APRES_MIDI', 'SORTIE_NON_AUTORISEE', 'INCOHERENCE_JOURNEE'],
       required: true,
     },
     description: {
@@ -35,6 +35,19 @@ const AnomalieSchema = new mongoose.Schema(
     commentaireAdmin: {
       type: String,
       default: '',
+    },
+    justificationMessage: {
+      type: String,
+      default: '',
+    },
+    justificationFichier: {
+      type: String, // Path or URL to the uploaded file
+      default: '',
+    },
+    statutJustification: {
+      type: String,
+      enum: ['AUCUNE', 'EN_ATTENTE', 'ACCEPTEE', 'REFUSEE'],
+      default: 'AUCUNE',
     },
   },
   {

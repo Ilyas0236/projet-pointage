@@ -54,7 +54,7 @@ export async function PUT(req) {
       return Response.json({ error: 'Accès non autorisé' }, { status: 403 });
     }
 
-    const { anomalyId, resolu, commentaireAdmin } = await req.json();
+    const { anomalyId, resolu, commentaireAdmin, statutJustification } = await req.json();
 
     if (!anomalyId) {
       return Response.json({ error: 'ID de l\'anomalie requis' }, { status: 400 });
@@ -67,6 +67,27 @@ export async function PUT(req) {
 
     if (resolu !== undefined) {
       anomaly.resolu = resolu;
+    }
+    
+    if (statutJustification) {
+      anomaly.statutJustification = statutJustification;
+      if (statutJustification === 'ACCEPTEE') {
+        anomaly.resolu = true;
+        
+        await Notification.create({
+          employe: anomaly.employe._id || anomaly.employe,
+          titre: `✅ Justificatif accepté`,
+          message: `Votre justificatif pour l'anomalie (${anomaly.type}) a été accepté.`,
+          type: 'INFO',
+        });
+      } else if (statutJustification === 'REFUSEE') {
+        await Notification.create({
+          employe: anomaly.employe._id || anomaly.employe,
+          titre: `❌ Justificatif refusé`,
+          message: `Votre justificatif pour l'anomalie (${anomaly.type}) a été refusé.`,
+          type: 'AVERTISSEMENT',
+        });
+      }
     }
 
     // Si l'Admin écrit un commentaire/avertissement

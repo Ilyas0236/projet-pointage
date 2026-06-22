@@ -142,115 +142,68 @@ export async function POST(req) {
       zone: zone_id || undefined,
     });
 
-    // 4. Anomaly checks
+    // 4. Anomaly checks (Nouvelle Logique Stricte)
     const anomaliesCreated = [];
     const employeeUser = await User.findById(payload.userId).select('nom matricule');
     const employeeName = employeeUser?.nom || 'Employé inconnu';
     const employeeMatricule = employeeUser?.matricule || '';
 
-    if (pointageType === 'ENTREE') {
-      // Latency threshold 08:30
-      const [hrs, mins] = currentTimeStr.split(':').map(Number);
-      const timeVal = hrs * 60 + mins;
-      const thresholdVal = 8 * 60 + 30; // 08:30
+    // Fonction utilitaire pour créer une anomalie
+    const createAnomaly = async (type, description) => {
+      try {
+        const anomaly = await Anomalie.create({
+          employe: payload.userId,
+          date: todayStart,
+          type: type,
+          description: description,
+          heuresTravaillees: 0,
+          seuilAttendu: 8,
+        });
+        anomaliesCreated.push(anomaly);
 
-      if (timeVal > thresholdVal) {
-        try {
-          const delayMin = timeVal - thresholdVal;
-          const description = `Retard de ${delayMin} minutes à l'arrivée (arrivée à ${currentTimeStr}, seuil 08:30)`;
-          const anomaly = await Anomalie.create({
-            employe: payload.userId,
-            date: todayStart,
-            type: 'RETARD',
-            description,
-            heuresTravaillees: 0,
-            seuilAttendu: 8,
-          });
-          anomaliesCreated.push(anomaly);
-
-          // Notification automatique pour l'Admin
-          await Notification.create({
-            employe: null,
-            titre: `⏱️ Retard détecté — ${employeeName}`,
-            message: `${employeeName} (${employeeMatricule}) est arrivé(e) à ${currentTimeStr} avec un retard de ${delayMin} minutes.`,
-            type: 'ALERTE',
-          });
-        } catch (e) {
-          // If unique index fails, anomaly already exists for today
-          console.log('Retard anomaly already exists');
-        }
+        // Notification automatique pour l'Admin
+        await Notification.create({
+          employe: null,
+          titre: `⚠️ Anomalie : ${type} — ${employeeName}`,
+          message: `${employeeName} (${employeeMatricule}) a généré une anomalie à ${currentTimeStr}. Raison : ${description}`,
+          type: 'ALERTE',
+        });
+      } catch (e) {
+        console.log(`Anomaly ${type} already exists for today.`);
       }
-    } else {
-      // Exit pointage
-      // Find the corresponding ENTREE pointage for today
-      const entryPointage = await Pointage.findOne({
-        employe: payload.userId,
-        date: { $gte: todayStart, $lte: todayEnd },
-        type: 'ENTREE',
-      }).sort({ createdAt: 1 }); // first entry of the day
+    };
 
-      if (entryPointage) {
-        const [entryHrs, entryMins] = entryPointage.heure.split(':').map(Number);
-        const [exitHrs, exitMins] = currentTimeStr.split(':').map(Number);
+    const [hrs, mins] = currentTimeStr.split(':').map(Number);
+    const timeVal = hrs * 60 + mins;
 
-        const entryVal = entryHrs * 60 + entryMins;
-        const exitVal = exitHrs * 60 + exitMins;
-
-        const minutesWorked = exitVal - entryVal;
-        const hoursWorked = Math.round((minutesWorked / 60) * 100) / 100;
-
-        // Check if hours worked < 8
-        if (hoursWorked < 8) {
-          try {
-            const description = `Insuffisance horaire : ${hoursWorked} heures effectuées (minimum requis : 8.00h)`;
-            const anomaly = await Anomalie.create({
-              employe: payload.userId,
-              date: todayStart,
-              type: 'INSUFFISANCE_HEURES',
-              description,
-              heuresTravaillees: hoursWorked,
-              seuilAttendu: 8,
-            });
-            anomaliesCreated.push(anomaly);
-
-            // Notification automatique pour l'Admin
-            await Notification.create({
-              employe: null,
-              titre: `📉 Heures insuffisantes — ${employeeName}`,
-              message: `${employeeName} (${employeeMatricule}) a travaillé seulement ${hoursWorked}h sur 8h requises.`,
-              type: 'ALERTE',
-            });
-          } catch (e) {
-            console.log('Insuffisance hours anomaly already exists');
-          }
-        }
-
-        // Check if early exit before 17:00
-        const thresholdExitVal = 17 * 60; // 17:00
-        if (exitVal < thresholdExitVal) {
-          try {
-            const description = `Sortie anticipée à ${currentTimeStr} (heure légale de sortie : 17:00)`;
-            const anomaly = await Anomalie.create({
-              employe: payload.userId,
-              date: todayStart,
-              type: 'SORTIE_ANTICIPEE',
-              description,
-              heuresTravaillees: hoursWorked,
-              seuilAttendu: 8,
-            });
-            anomaliesCreated.push(anomaly);
-
-            // Notification automatique pour l'Admin
-            await Notification.create({
-              employe: null,
-              titre: `🏃 Sortie anticipée — ${employeeName}`,
-              message: `${employeeName} (${employeeMatricule}) a quitté les locaux à ${currentTimeStr} au lieu de 17:00.`,
-              type: 'ALERTE',
-            });
-          } catch (e) {
-            console.log('Early exit anomaly already exists');
-          }
-        }
+    // --- MACHINE À ÉTATS SELON LE POINTAGE ---
+    if (pointagesToday.length === 0) {
+      // Pointage 1 : ENTRÉE MATIN
+      if (timeVal > 12 * 60) {
+        await createAnomaly('ABSENCE_MATIN', `Employé absent le matin (aucun pointage entre 08:30 et 12:00). Arrivé à ${currentTimeStr}`);
+      } else if (timeVal > 8 * 60 + 30) {
+        const delayMin = timeVal - (8 * 60 + 30);
+        await createAnomaly('RETARD', `Retard de ${delayMin} minutes à l'arrivée (arrivée à ${currentTimeStr}, seuil 08:30)`);
+      }
+    } 
+    else if (pointagesToday.length === 1) {
+      // Pointage 2 : SORTIE DÉJEUNER
+      if (timeVal < 12 * 60) {
+        await createAnomaly('SORTIE_NON_AUTORISEE', `Sortie non autorisée avant 12:00 (sortie à ${currentTimeStr})`);
+      } else if (timeVal > 14 * 60) {
+        await createAnomaly('INCOHERENCE_JOURNEE', `Incohérence : pas de sortie déjeuner enregistrée dans les temps (scan à ${currentTimeStr})`);
+      }
+    } 
+    else if (pointagesToday.length === 2) {
+      // Pointage 3 : RETOUR DÉJEUNER
+      if (timeVal > 14 * 60) {
+        await createAnomaly('ABSENCE_APRES_MIDI', `Employé absent l'après-midi (aucun retour avant 14:00). Retour à ${currentTimeStr}`);
+      }
+    } 
+    else if (pointagesToday.length === 3) {
+      // Pointage 4 : SORTIE FINALE
+      if (timeVal < 18 * 60) {
+        await createAnomaly('SORTIE_ANTICIPEE', `Sortie anticipée à ${currentTimeStr} (heure légale de sortie : 18:00)`);
       }
     }
 

@@ -120,6 +120,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { label: 'Dashboard', path: '/dashboard', icon: icons.dashboard },
     { label: 'Pointer', path: '/pointer', icon: icons.camera },
     { label: 'Mes Congés', path: '/conges', icon: icons.calendar },
+    { label: 'Mes Anomalies', path: '/anomalies', icon: icons.alert },
     { label: 'Historique', path: '/historique', icon: icons.history },
     { label: 'Mon Profil', path: '/profil', icon: icons.user },
   ];

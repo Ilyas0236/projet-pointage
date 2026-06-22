@@ -19,6 +19,7 @@ export default function AdminAnomalies() {
   const [commentModalId, setCommentModalId] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [sendingComment, setSendingComment] = useState(false);
+  const [justifActionId, setJustifActionId] = useState(null);
 
   useEffect(() => {
     fetchAnomalies();
@@ -98,6 +99,24 @@ export default function AdminAnomalies() {
       toast(err.response?.data?.error || "Erreur lors de l'envoi.", 'error');
     } finally {
       setSendingComment(false);
+    }
+  };
+
+  const handleJustificationDecision = async (id, decision) => {
+    const token = localStorage.getItem('token');
+    setJustifActionId(id);
+    try {
+      await axios.put(
+        '/api/anomalies',
+        { anomalyId: id, statutJustification: decision },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast(`Justificatif ${decision === 'ACCEPTEE' ? 'accepté' : 'refusé'} avec succès.`, decision === 'ACCEPTEE' ? 'success' : 'error');
+      await fetchAnomalies();
+    } catch (err) {
+      toast(err.response?.data?.error || 'Erreur lors du traitement.', 'error');
+    } finally {
+      setJustifActionId(null);
     }
   };
 
@@ -229,7 +248,11 @@ export default function AdminAnomalies() {
                 <option value="all" style={{ background: 'var(--bg-surface)' }}>Tous les types</option>
                 <option value="RETARD" style={{ background: 'var(--bg-surface)' }}>⏰ Retard</option>
                 <option value="ABSENCE" style={{ background: 'var(--bg-surface)' }}>❌ Absence</option>
+                <option value="ABSENCE_MATIN" style={{ background: 'var(--bg-surface)' }}>🌅 Absence matin</option>
+                <option value="ABSENCE_APRES_MIDI" style={{ background: 'var(--bg-surface)' }}>🌇 Absence après-midi</option>
                 <option value="SORTIE_ANTICIPEE" style={{ background: 'var(--bg-surface)' }}>🏃 Sortie anticipée</option>
+                <option value="SORTIE_NON_AUTORISEE" style={{ background: 'var(--bg-surface)' }}>🚫 Sortie non autorisée</option>
+                <option value="INCOHERENCE_JOURNEE" style={{ background: 'var(--bg-surface)' }}>⚠️ Incohérence journée</option>
                 <option value="INSUFFISANCE_HEURES" style={{ background: 'var(--bg-surface)' }}>📉 Insuffisance d'heures</option>
               </select>
             </div>
@@ -258,6 +281,7 @@ export default function AdminAnomalies() {
                   <th>Collaborateur</th>
                   <th>Type</th>
                   <th>Description</th>
+                  <th>Justificatif</th>
                   <th>Commentaire Admin</th>
                   <th>État</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
@@ -324,6 +348,50 @@ export default function AdminAnomalies() {
                           }
                           return a.description;
                         })()}
+                      </td>
+                      {/* Colonne Justificatif */}
+                      <td style={{ maxWidth: '250px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
+                        {a.statutJustification === 'AUCUNE' && (
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Aucun</span>
+                        )}
+                        {a.statutJustification === 'EN_ATTENTE' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {a.justificationMessage && (
+                              <div style={{ background: 'rgba(59,130,246,0.1)', padding: '8px 12px', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', color: 'var(--info)' }}>
+                                💬 {a.justificationMessage}
+                              </div>
+                            )}
+                            {a.justificationFichier && (
+                              <a href={a.justificationFichier} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 600, textDecoration: 'none' }}>
+                                📎 Voir le document
+                              </a>
+                            )}
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => handleJustificationDecision(a._id, 'ACCEPTEE')}
+                                disabled={justifActionId !== null}
+                                className="btn-primary"
+                                style={{ padding: '4px 10px', fontSize: '0.7rem', background: 'var(--success)' }}
+                              >
+                                {justifActionId === a._id ? '...' : '✓ Accepter'}
+                              </button>
+                              <button
+                                onClick={() => handleJustificationDecision(a._id, 'REFUSEE')}
+                                disabled={justifActionId !== null}
+                                className="btn-secondary"
+                                style={{ padding: '4px 10px', fontSize: '0.7rem', color: 'var(--error)', borderColor: 'var(--error)' }}
+                              >
+                                ✗ Refuser
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        {a.statutJustification === 'ACCEPTEE' && (
+                          <span className="badge badge-success">✓ Accepté</span>
+                        )}
+                        {a.statutJustification === 'REFUSEE' && (
+                          <span className="badge badge-error">✗ Refusé</span>
+                        )}
                       </td>
                       <td style={{ maxWidth: '250px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
                         {a.commentaireAdmin ? (
