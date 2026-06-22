@@ -160,12 +160,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
 
         {/* Logo */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border px-6">
-          <div style={{ background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(14,165,233,0.3)', letterSpacing: '-0.02em' }}>
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border/50 px-6">
+          <div style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.85rem', boxShadow: '0 4px 12px rgba(99,102,241,0.3)', letterSpacing: '-0.02em' }}>
             ST
           </div>
-          <span className="font-heading font-bold text-lg tracking-tight" style={{ background: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>ScanTime</span>
-          <span className="ml-auto inline-flex items-center rounded-full bg-primary-500/10 px-2 py-0.5 text-xs font-semibold text-primary tracking-wider uppercase ring-1 ring-inset ring-primary-500/20">
+          <span className="font-heading font-bold text-lg tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-violet-400">ScanTime</span>
+          <span className="ml-auto inline-flex items-center rounded-full bg-primary-500/10 px-2 py-0.5 text-xs font-semibold text-primary-400 tracking-wider uppercase ring-1 ring-inset ring-primary-500/20">
             Pro
           </span>
         </div>
@@ -185,13 +185,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                       router.push(link.path);
                       if (window.innerWidth < 768) setIsOpen(false);
                     }}
-                    className={`group flex w-full items-center gap-x-3 rounded-lg p-2.5 text-sm font-medium leading-6 transition-all duration-200 ${
+                    className={`group flex w-full items-center gap-x-3 rounded-xl p-2.5 text-sm font-medium leading-6 transition-all duration-300 ${
                       isActive 
-                        ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20' 
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        ? 'bg-primary-500/10 text-primary-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] ring-1 ring-primary-500/20' 
+                        : 'text-muted-foreground hover:bg-surface-800/50 hover:text-foreground'
                     }`}
                   >
-                    <span className={`shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
+                    <span className={`shrink-0 transition-colors duration-300 ${isActive ? 'text-primary-400' : 'text-muted-foreground group-hover:text-foreground'}`}>
                       {link.icon}
                     </span>
                     {link.label}

@@ -133,8 +133,8 @@ export default function AdminDashboard() {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard Administrateur</h1>
-          <p className="text-muted-foreground mt-1">Vue d'ensemble de l'activité de l'entreprise</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-surface-400 font-heading">Supervision</h1>
+          <p className="text-muted-foreground mt-2 font-medium">Vue d'ensemble de l'activité de l'entreprise</p>
         </div>
         <div className="flex items-center gap-3">
           <button 
@@ -165,63 +165,88 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* KPI Cards */}
-        <div className="card p-6 border-t-4 border-t-primary">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Employés Actifs</h3>
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+        <div className="card p-6 border-t-4 border-t-primary-500 relative overflow-hidden group">
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl group-hover:bg-primary-500/20 transition-all"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <h3 className="text-[0.7rem] font-bold tracking-widest text-muted-foreground uppercase">Employés Actifs</h3>
+            <div className="p-2 bg-primary-500/10 rounded-lg text-primary-500">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
           </div>
-          <div className="mt-4 text-4xl font-bold text-foreground">{totalEmp}</div>
-          <div className="mt-1 text-sm text-emerald-500 font-medium">Total enregistrés</div>
+          <div className="mt-4 text-4xl font-black text-foreground relative z-10">{totalEmp}</div>
+          <div className="mt-1 text-sm text-emerald-400 font-medium relative z-10 flex items-center gap-1">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            Total enregistrés
+          </div>
         </div>
         
-        <div className="card p-6 border-t-4 border-t-amber-500">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Anomalies</h3>
-            <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+        <div className="card p-6 border-t-4 border-t-rose-500 relative overflow-hidden group">
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <h3 className="text-[0.7rem] font-bold tracking-widest text-muted-foreground uppercase">Anomalies</h3>
+            <div className="p-2 bg-rose-500/10 rounded-lg text-rose-500">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
           </div>
-          <div className="mt-4 text-4xl font-bold text-foreground">{anomalies}</div>
-          <div className="mt-1 text-sm text-rose-500 font-medium">À traiter rapidement</div>
+          <div className="mt-4 text-4xl font-black text-foreground relative z-10">{anomalies}</div>
+          <div className="mt-1 text-sm text-rose-400 font-medium relative z-10 flex items-center gap-1">
+            À traiter rapidement
+          </div>
         </div>
 
-        <div className="card p-6 border-t-4 border-t-cyan-500">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Pointages</h3>
-            <svg className="w-5 h-5 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+        <div className="card p-6 border-t-4 border-t-cyan-500 relative overflow-hidden group">
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition-all"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <h3 className="text-[0.7rem] font-bold tracking-widest text-muted-foreground uppercase">Pointages</h3>
+            <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-500">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
           </div>
-          <div className="mt-4 text-4xl font-bold text-foreground">{stats?.counts?.pointagesToday || 0}</div>
-          <div className="mt-1 text-sm text-muted-foreground font-medium">Opérations aujourd'hui</div>
+          <div className="mt-4 text-4xl font-black text-foreground relative z-10">{stats?.counts?.pointagesToday || 0}</div>
+          <div className="mt-1 text-sm text-muted-foreground font-medium relative z-10">Opérations aujourd'hui</div>
         </div>
 
-        <div className="card p-6 border-t-4 border-t-emerald-500">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Congés</h3>
-            <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+        <div className="card p-6 border-t-4 border-t-amber-500 relative overflow-hidden group">
+          <div className="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <h3 className="text-[0.7rem] font-bold tracking-widest text-muted-foreground uppercase">Congés</h3>
+            <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
           </div>
-          <div className="mt-4 text-4xl font-bold text-foreground">{stats?.counts?.pendingConges || 0}</div>
-          <div className="mt-1 text-sm text-muted-foreground font-medium">En attente de validation</div>
+          <div className="mt-4 text-4xl font-black text-foreground relative z-10">{stats?.counts?.pendingConges || 0}</div>
+          <div className="mt-1 text-sm text-muted-foreground font-medium relative z-10">En attente de validation</div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Chart */}
-        <div className="card p-6 lg:col-span-2">
-          <h2 className="text-lg font-bold text-foreground mb-6">Taux de Présence (Semaine)</h2>
-          <div className="h-[300px] w-full">
+        <div className="card p-6 lg:col-span-2 flex flex-col">
+          <h2 className="text-lg font-bold text-foreground mb-6 font-heading tracking-tight">Taux de Présence (Semaine)</h2>
+          <div className="flex-1 w-full min-h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={presenceData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--muted-foreground)' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--muted-foreground)' }} dx={-10} />
-                <RechartsTooltip cursor={{ fill: 'var(--accent)' }} contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--foreground)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                <Bar dataKey="value" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={40} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }} dx={-10} />
+                <RechartsTooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--foreground)', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)' }} />
+                <Bar dataKey="value" fill="url(#colorUv)" radius={[6, 6, 0, 0]} barSize={45}>
+                  {/* Define gradient for the bar */}
+                </Bar>
+                <defs>
+                  <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#818cf8" stopOpacity={1}/>
+                    <stop offset="100%" stopColor="#4f46e5" stopOpacity={1}/>
+                  </linearGradient>
+                </defs>
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -237,12 +262,13 @@ export default function AdminDashboard() {
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
+                  innerRadius={65}
+                  outerRadius={85}
                   fill="#8884d8"
-                  paddingAngle={5}
+                  paddingAngle={8}
                   dataKey="value"
                   stroke="none"
+                  cornerRadius={4}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

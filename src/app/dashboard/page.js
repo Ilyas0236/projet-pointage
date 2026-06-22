@@ -108,8 +108,8 @@ export default function EmployeeDashboard() {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Mon Espace</h1>
-          <p className="text-muted-foreground mt-1">Bienvenue sur votre tableau de bord personnel</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-foreground to-surface-400 font-heading">Mon Espace</h1>
+          <p className="text-muted-foreground mt-2 font-medium">Bienvenue sur votre tableau de bord personnel</p>
         </div>
         <button 
           className="btn-primary flex items-center gap-2"
@@ -123,27 +123,48 @@ export default function EmployeeDashboard() {
         </button>
       </div>
 
-      {/* DAILY SUMMARY (NEW) */}
+      {/* DAILY SUMMARY */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="card p-4 border-l-4 border-l-primary flex flex-col justify-center">
-          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Statut Actuel</p>
-          <p className="text-lg font-bold text-foreground truncate">{stats?.statutActuel || 'Chargement...'}</p>
+        <div className="card p-5 border-t-4 border-t-primary-500 flex flex-col justify-center relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary-500/10 rounded-full blur-xl group-hover:bg-primary-500/20 transition-all"></div>
+          <p className="text-[0.7rem] text-muted-foreground uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary-500"></span>
+            Statut Actuel
+          </p>
+          <p className="text-2xl font-bold text-foreground truncate">{stats?.statutActuel || 'Chargement...'}</p>
         </div>
-        <div className="card p-4 border-l-4 border-l-emerald-500 flex flex-col justify-center">
-          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Pointages (Jour)</p>
-          <p className="text-xl font-bold text-foreground">{stats?.pointagesAujourdhui !== undefined ? stats.pointagesAujourdhui : '-'}</p>
+        
+        <div className="card p-5 border-t-4 border-t-emerald-500 flex flex-col justify-center relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
+          <p className="text-[0.7rem] text-muted-foreground uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Pointages (Jour)
+          </p>
+          <p className="text-2xl font-bold text-foreground">{stats?.pointagesAujourdhui !== undefined ? stats.pointagesAujourdhui : '-'}</p>
         </div>
-        <div className="card p-4 border-l-4 border-l-amber-500 flex flex-col justify-center">
-          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Pointages Restants</p>
-          <p className="text-xl font-bold text-foreground">{stats?.pointagesRestants !== undefined ? stats.pointagesRestants : '-'}</p>
+
+        <div className="card p-5 border-t-4 border-t-amber-500 flex flex-col justify-center relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
+          <p className="text-[0.7rem] text-muted-foreground uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+            Pointages Restants
+          </p>
+          <p className="text-2xl font-bold text-foreground">{stats?.pointagesRestants !== undefined ? stats.pointagesRestants : '-'}</p>
         </div>
-        <div className="card p-4 border-l-4 border-l-rose-500 flex flex-col justify-center">
-          <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Dernier Pointage</p>
-          <p className="text-sm font-bold text-foreground truncate">
+
+        <div className="card p-5 border-t-4 border-t-rose-500 flex flex-col justify-center relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all"></div>
+          <p className="text-[0.7rem] text-muted-foreground uppercase font-bold tracking-widest mb-2 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+            Dernier Pointage
+          </p>
+          <p className="text-lg font-bold text-foreground truncate mt-1">
             {stats?.dernierPointage ? (
               <span className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${stats.dernierPointage.type === 'ENTREE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                {stats.dernierPointage.heure} ({stats.dernierPointage.type === 'ENTREE' ? 'Entrée' : 'Sortie'})
+                <span className={`px-2 py-0.5 rounded-md text-[0.75rem] ${stats.dernierPointage.type === 'ENTREE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                  {stats.dernierPointage.type === 'ENTREE' ? 'ENTRÉE' : 'SORTIE'}
+                </span>
+                {stats.dernierPointage.heure}
               </span>
             ) : 'Aucun pointage'}
           </p>
@@ -153,14 +174,22 @@ export default function EmployeeDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         
         {/* TRACK TIME (Live Stopwatch) */}
-        <div className={`card p-6 md:col-span-4 border-t-4 ${activeSession ? 'border-t-amber-500 bg-amber-500/5' : 'border-t-primary'}`}>
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Temps Réel</h3>
-            <svg className={`w-5 h-5 ${activeSession ? 'text-amber-500' : 'text-muted-foreground'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div className={`card p-6 md:col-span-4 border-t-4 relative overflow-hidden ${activeSession ? 'border-t-amber-500' : 'border-t-primary-500'}`}>
+          <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+            <svg className="w-24 h-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <div className={`mt-4 text-4xl font-mono font-bold tracking-tighter ${activeSession ? 'text-amber-500' : 'text-foreground'}`}>
+          <div className="flex items-center justify-between">
+            <h3 className="text-[0.75rem] font-bold tracking-widest text-muted-foreground uppercase">Temps Réel</h3>
+            {activeSession && (
+               <span className="flex h-3 w-3 relative">
+                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                 <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+               </span>
+            )}
+          </div>
+          <div className={`mt-6 text-5xl font-mono font-black tracking-tight ${activeSession ? 'text-amber-500 drop-shadow-[0_0_15px_rgba(245,158,11,0.3)]' : 'text-foreground'}`}>
             {elapsed}
           </div>
           <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground font-medium">
