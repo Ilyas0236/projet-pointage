@@ -2,9 +2,6 @@ import dbConnect from '@/lib/db';
 import Anomalie from '@/models/Anomalie';
 import Notification from '@/models/Notification';
 import { verifyAuth } from '@/lib/auth';
-import { writeFile } from 'fs/promises';
-import { join } from 'path';
-import fs from 'fs';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,20 +36,10 @@ export async function POST(req) {
     if (file && file.size > 0) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-
-      const uploadDir = join(process.cwd(), 'public', 'uploads', 'justifications');
-      // Create dir if not exists
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      const safeFilename = file.name ? file.name.replace(/[^a-zA-Z0-9.-]/g, '_') : 'fichier';
-      const filename = `${uniqueSuffix}-${safeFilename}`;
-      const path = join(uploadDir, filename);
-
-      await writeFile(path, buffer);
-      filePath = `/uploads/justifications/${filename}`;
+      const mimeType = file.type || 'application/octet-stream';
+      
+      // Vercel est serverless (lecture seule). On convertit le fichier en Base64 pour le stocker en BDD.
+      filePath = `data:${mimeType};base64,${buffer.toString('base64')}`;
     }
 
     anomaly.justificationMessage = message || '';
