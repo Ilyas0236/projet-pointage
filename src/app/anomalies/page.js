@@ -69,7 +69,6 @@ export default function AnomaliesEmployee() {
       await axios.post('/api/anomalies/justifier', formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
         },
       });
 
@@ -78,7 +77,8 @@ export default function AnomaliesEmployee() {
       fetchAnomalies(); // Refresh list
     } catch (error) {
       console.error('Upload error', error);
-      alert('Erreur lors de l\'envoi du justificatif.');
+      const errorMsg = error.response?.data?.error || 'Erreur lors de l\'envoi du justificatif.';
+      alert(errorMsg);
     } finally {
       setIsSubmitting(false);
     }

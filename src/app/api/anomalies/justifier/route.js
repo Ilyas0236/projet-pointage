@@ -75,6 +75,6 @@ export async function POST(req) {
 
   } catch (error) {
     console.error('Error in justifier API:', error);
-    return Response.json({ error: 'Erreur lors de l\'envoi de la justification' }, { status: 500 });
+    return Response.json({ error: error.message || 'Erreur lors de l\'envoi de la justification' }, { status: 500 });
   }
 }
