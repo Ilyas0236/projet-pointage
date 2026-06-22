@@ -44,7 +44,10 @@ export default function AdminEmployes() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('/api/employes');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/employes', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setEmployees(response.data || []);
     } catch (err) {
       console.error(err);

@@ -34,7 +34,10 @@ export default function AdminDashboard() {
 
     const fetchStats = async () => {
       try {
-        const res = await axios.get('/api/stats');
+        const token = localStorage.getItem('token');
+        const res = await axios.get('/api/stats', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setStats(res.data);
       } catch (error) {
         console.error('Error fetching stats:', error);

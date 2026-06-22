@@ -35,7 +35,10 @@ export default function AdminConges() {
 
   const fetchConges = async () => {
     try {
-      const response = await axios.get('/api/conges');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/conges', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setConges(response.data.conges || []);
     } catch (err) {
       console.error('Error fetching conges:', err);

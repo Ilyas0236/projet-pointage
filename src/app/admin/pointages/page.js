@@ -41,7 +41,10 @@ export default function AdminPointages() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('/api/employes');
+      const token = localStorage.getItem('token');
+      const response = await axios.get('/api/employes', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setEmployees(response.data || []);
     } catch (err) {
       console.error('Error fetching employees:', err);
@@ -51,6 +54,7 @@ export default function AdminPointages() {
   const fetchPointages = async () => {
     setLoading(true);
     try {
+      const token = localStorage.getItem('token');
       let url = '/api/pointage';
       const params = [];
       if (filterEmployee) {
@@ -63,7 +67,9 @@ export default function AdminPointages() {
         url += `?${params.join('&')}`;
       }
 
-      const response = await axios.get(url);
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setPointages(response.data || []);
     } catch (err) {
       console.error('Error fetching pointages:', err);
