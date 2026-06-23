@@ -171,6 +171,15 @@ export async function POST(req) {
           message: `${employeeName} (${employeeMatricule}) a généré une anomalie à ${currentTimeStr}. Raison : ${description}`,
           type: 'ALERTE',
         });
+
+        // Notification automatique pour l'Employé
+        await Notification.create({
+          employe: payload.userId,
+          titre: `⚠️ Anomalie détectée : ${type}`,
+          message: description,
+          type: 'AVERTISSEMENT',
+        });
+
       } catch (e) {
         console.log(`Anomaly ${type} already exists for today.`);
       }
