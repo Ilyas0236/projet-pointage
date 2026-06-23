@@ -121,11 +121,14 @@ export async function POST(req) {
     // Determine type: 0 -> ENTREE, 1 -> SORTIE, 2 -> ENTREE, 3 -> SORTIE
     const pointageType = pointagesToday.length % 2 === 0 ? 'ENTREE' : 'SORTIE';
 
-    // Current hour string
+    // Current hour string in local timezone (Africa/Casablanca = UTC+1)
     const formatTime = (d) => {
-      const hrs = String(d.getHours()).padStart(2, '0');
-      const mins = String(d.getMinutes()).padStart(2, '0');
-      return `${hrs}:${mins}`;
+      return d.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Africa/Casablanca'
+      });
     };
     const currentTimeStr = formatTime(now);
 
