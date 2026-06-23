@@ -181,7 +181,7 @@ export default function EmployeeDashboard() {
             </svg>
           </div>
           <div className="flex items-center justify-between">
-            <h3 className="text-[0.75rem] font-bold tracking-widest text-muted-foreground uppercase">Temps Réel</h3>
+            <h3 className="text-[0.75rem] font-bold tracking-widest text-muted-foreground uppercase">Temps de Travail</h3>
             {activeSession && (
                <span className="flex h-3 w-3 relative">
                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
