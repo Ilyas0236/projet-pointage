@@ -1,7 +1,7 @@
 /* eslint-disable */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
@@ -15,43 +15,60 @@ export default function EmployeeDashboard() {
   const [activeSession, setActiveSession] = useState(null);
   const [elapsed, setElapsed] = useState('00:00:00');
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('/api/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = res.data;
-        setStats(data);
-        
-        // Check for active session today
-        if (data.historique && data.historique.length > 0) {
-          const todayStr = new Date().toDateString();
-          const todaysPointages = data.historique.filter(p => new Date(p.date).toDateString() === todayStr);
-          if (todaysPointages.length > 0) {
-            const last = todaysPointages[0]; // First in array is the most recent
-            if (last.type === 'entree' || last.type === 'ENTREE') {
-              // Construct Date object from pointage date and heure
-              const datePart = last.date.split('T')[0];
-              setActiveSession(new Date(`${datePart}T${last.heure}:00`));
-            } else {
-              setActiveSession(null);
-            }
+  const fetchStats = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('/api/stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = res.data;
+      setStats(data);
+      
+      // Check for active session today
+      if (data.historique && data.historique.length > 0) {
+        const todayStr = new Date().toDateString();
+        const todaysPointages = data.historique.filter(p => new Date(p.date).toDateString() === todayStr);
+        if (todaysPointages.length > 0) {
+          const last = todaysPointages[0]; // First in array is the most recent
+          if (last.type === 'entree' || last.type === 'ENTREE') {
+            // Construct Date object from pointage date and heure
+            const datePart = last.date.split('T')[0];
+            setActiveSession(new Date(`${datePart}T${last.heure}:00`));
+          } else {
+            setActiveSession(null);
           }
         }
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        if (error.response && error.response.status === 401) {
-          router.push('/login');
-        }
-      } finally {
-        setLoading(false);
+      } else {
+        setActiveSession(null);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      if (error.response && error.response.status === 401) {
+        router.push('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  // Fetch stats on mount + re-fetch when user comes back to this tab
+  useEffect(() => {
+    fetchStats();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchStats();
       }
     };
 
-    fetchStats();
-  }, [router]);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleVisibility);
+    };
+  }, [fetchStats]);
 
   // Live Stopwatch Effect
   useEffect(() => {
