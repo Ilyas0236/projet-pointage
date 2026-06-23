@@ -10,7 +10,7 @@ import Notification from '@/models/Notification';
 // This endpoint is meant to be called by a CRON job twice a day:
 // 12:00 -> /api/anomalies/detecter?periode=matin
 // 18:00 -> /api/anomalies/detecter?periode=apres-midi
-export async function POST(req) {
+export async function GET(req) {
   try {
     await dbConnect();
     
