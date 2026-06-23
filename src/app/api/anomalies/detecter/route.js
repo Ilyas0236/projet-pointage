@@ -17,6 +17,7 @@ export async function POST(req) {
     const authHeader = req.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       console.warn('CRON Detection called without proper secret');
+      return Response.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
