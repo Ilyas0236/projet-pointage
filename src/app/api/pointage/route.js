@@ -193,6 +193,12 @@ export async function POST(req) {
       // Pointage 1 : ENTRÉE MATIN
       if (timeVal > 12 * 60) {
         await createAnomaly('ABSENCE_MATIN', `Employé absent le matin (aucun pointage entre 08:30 et 12:00). Arrivé à ${currentTimeStr}`);
+
+        // Si en plus il arrive après 14:00 → retard après-midi
+        if (timeVal > 14 * 60) {
+          const delayMin = timeVal - (14 * 60);
+          await createAnomaly('RETARD', `Retard après-midi de ${delayMin} minutes (arrivée à ${currentTimeStr}, reprise obligatoire avant 14:00)`);
+        }
       } else if (timeVal > 8 * 60 + 30) {
         const delayMin = timeVal - (8 * 60 + 30);
         await createAnomaly('RETARD', `Retard de ${delayMin} minutes à l'arrivée (arrivée à ${currentTimeStr}, seuil 08:30)`);
