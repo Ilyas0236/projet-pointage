@@ -7,7 +7,9 @@ import Notification from '@/models/Notification';
 
 // ... (skipping unchanged code for safety by replacing the whole block)
 
-// This endpoint is meant to be called by a CRON job (e.g. at 23:59)
+// This endpoint is meant to be called by a CRON job twice a day:
+// 12:00 -> /api/anomalies/detecter?periode=matin
+// 18:00 -> /api/anomalies/detecter?periode=apres-midi
 export async function POST(req) {
   try {
     await dbConnect();
@@ -17,90 +19,105 @@ export async function POST(req) {
       console.warn('CRON Detection called without proper secret');
     }
 
+    const { searchParams } = new URL(req.url);
+    const periode = searchParams.get('periode');
+
+    if (periode !== 'matin' && periode !== 'apres-midi') {
+      return Response.json({ error: "Paramètre 'periode' invalide. Utilisez '?periode=matin' ou '?periode=apres-midi'." }, { status: 400 });
+    }
+
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
     const todayEnd = new Date();
     todayEnd.setUTCHours(23, 59, 59, 999);
 
+    // Définir la plage horaire à vérifier selon la période
+    // Matin : on cherche un pointage entre minuit et midi
+    // Après-midi : on cherche un pointage entre midi et 18h
+    let checkStart = new Date(todayStart);
+    let checkEnd = new Date(todayStart);
+    let typeAnomalie = '';
+    let titreAnomalie = '';
+    
+    if (periode === 'matin') {
+      checkStart.setUTCHours(0, 0, 0, 0);
+      checkEnd.setUTCHours(12, 0, 0, 0);
+      typeAnomalie = 'ABSENCE_MATIN';
+      titreAnomalie = 'Absence Matin';
+    } else {
+      checkStart.setUTCHours(12, 0, 0, 0);
+      checkEnd.setUTCHours(18, 0, 0, 0);
+      typeAnomalie = 'ABSENCE_APRES_MIDI';
+      titreAnomalie = 'Absence Après-midi';
+    }
+
     const activeEmployees = await User.find({ role: 'EMPLOYE', actif: true });
     let anomaliesCreated = 0;
 
     for (const emp of activeEmployees) {
-      // Check if employee has pointages today
-      const pointagesToday = await Pointage.find({
+      // Vérifier si l'employé a un congé valide pour cette journée
+      const activeLeave = await Conge.findOne({
         employe: emp._id,
-        date: { $gte: todayStart, $lte: todayEnd }
+        statut: 'VALIDE',
+        date_debut: { $lte: todayEnd },
+        date_fin: { $gte: todayStart }
       });
 
-      if (pointagesToday.length === 0) {
-        // Employee didn't clock in. Are they on leave?
-        const activeLeave = await Conge.findOne({
-          employe: emp._id,
-          statut: 'VALIDE',
-          date_debut: { $lte: todayEnd },
-          date_fin: { $gte: todayStart }
-        });
+      if (activeLeave) {
+        continue; // L'employé est en congé validé, on ne crée pas d'anomalie
+      }
 
-        if (!activeLeave) {
-          // Employee is absent without leave!
-          try {
-            const desc = 'Absence injustifiée (aucun pointage enregistré aujourd\'hui)';
-            await Anomalie.create({
-              employe: emp._id,
-              date: todayStart,
-              type: 'ABSENCE',
-              description: desc,
-              heuresTravaillees: 0,
-              seuilAttendu: 8,
-              resolu: false,
-              commentaireAdmin: 'Absence injustifiée système. Veuillez justifier.' // Auto comment
-            });
-            
-            // Auto warning to Employee
-            await Notification.create({
-              employe: emp._id,
-              titre: '⚠️ Avertissement : Absence',
-              message: 'Système : ' + desc,
-              type: 'AVERTISSEMENT',
-            });
+      // Chercher n'importe quel pointage d'ENTREE dans la plage horaire
+      const pointagesPeriode = await Pointage.find({
+        employe: emp._id,
+        type: 'ENTREE',
+        date: { $gte: checkStart, $lte: checkEnd }
+      });
 
-            // Auto alert to Admin
-            await Notification.create({
-              employe: null,
-              titre: `❌ Absence détectée — ${emp.nom}`,
-              message: `${emp.nom} (${emp.matricule}) n'a effectué aucun pointage aujourd'hui.`,
-              type: 'ALERTE',
-            });
+      if (pointagesPeriode.length === 0) {
+        // Aucun pointage d'entrée détecté dans la plage horaire
+        try {
+          const desc = `Absence injustifiée détectée pour la période : ${titreAnomalie}. Aucun pointage d'entrée enregistré avant ${periode === 'matin' ? '12h00' : '18h00'}.`;
+          
+          await Anomalie.create({
+            employe: emp._id,
+            date: todayStart,
+            type: typeAnomalie,
+            description: desc,
+            heuresTravaillees: 0,
+            seuilAttendu: 4, // 4 heures par demi-journée
+            resolu: false,
+            commentaireAdmin: 'Absence détectée automatiquement par le système à la fin de la période.'
+          });
+          
+          // Notification Employé
+          await Notification.create({
+            employe: emp._id,
+            titre: `⚠️ Avertissement : ${titreAnomalie}`,
+            message: 'Système : ' + desc,
+            type: 'AVERTISSEMENT',
+          });
 
-            anomaliesCreated++;
-          } catch (e) {
-            // Might throw if already exists
+          // Notification Admin
+          await Notification.create({
+            employe: null, // null signifie que c'est pour les admins
+            titre: `❌ ${titreAnomalie} — ${emp.nom}`,
+            message: `${emp.nom} (${emp.matricule}) n'a effectué aucun pointage d'entrée ce ${periode}.`,
+            type: 'ALERTE',
+          });
+
+          anomaliesCreated++;
+        } catch (e) {
+          // Si l'erreur est un doublon (E11000), on l'ignore car l'anomalie existe déjà (grâce à l'index unique).
+          if (e.code !== 11000) {
+            console.error(`Erreur lors de la création de l'anomalie pour ${emp.nom}:`, e);
           }
-        }
-      } else {
-        // If they clocked in, let's verify if they never clocked out (Missing exit)
-        // We look for the last pointage of the day
-        const lastPointage = pointagesToday.sort((a, b) => b.createdAt - a.createdAt)[0];
-        if (lastPointage && lastPointage.type === 'ENTREE') {
-          // Pointed IN but never OUT
-          try {
-            await Anomalie.create({
-              employe: emp._id,
-              date: todayStart,
-              type: 'SORTIE_ANTICIPEE', // Or a custom 'OUBLI_SORTIE' if desired
-              description: 'Pointage de sortie manquant pour la journée.',
-              heuresTravaillees: 0,
-              seuilAttendu: 8,
-              resolu: false
-            });
-            anomaliesCreated++;
-          } catch (e) {}
         }
       }
     }
 
     return Response.json({
-      message: 'Détection des anomalies CRON terminée avec succès.',
+      message: `Détection des anomalies (${periode}) terminée avec succès.`,
       anomaliesCreated
     }, { status: 200 });
 
